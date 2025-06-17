@@ -1,136 +1,431 @@
+"use client"
+
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, CheckCircle, Zap } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { ArrowRight, CheckCircle, Zap, Star, Heart } from "lucide-react";
 import Link from "next/link";
-import { Navbar } from "@/components/navbar";
 import { StartDialog } from "@/components/start-dialog";
+import Image from "next/image";
+import { Badge } from "@/components/ui/badge";
+import { Style, Outfit, ItemDetail } from "@/types/fashion";
+import { useEffect, useState } from "react";
+import { getFavoriteIds, toggleFavorite, getFavoriteItems } from "@/lib/favorites";
+import { loadOutfits } from "@/lib/fashionStorage";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
+
+const featuredIdols = [
+  {
+    id: "newjeans",
+    name: "NewJeans",
+    image: "https://i.imgur.com/8tMUxPj.jpg",
+    latestOutfit: "Hypebeast 스타일",
+    brand: "Nike x Stussy",
+  },
+  {
+    id: "enhypen",
+    name: "ENHYPEN",
+    image: "https://i.imgur.com/2QZt5Gx.jpg",
+    latestOutfit: "모노톤 스트릿 룩",
+    brand: "Balenciaga",
+  },
+  {
+    id: "lesserafim",
+    name: "LE SSERAFIM",
+    image: "https://i.imgur.com/3QZt5Gx.jpg",
+    latestOutfit: "스트릿 패션",
+    brand: "Off-White",
+  },
+];
+
+// 임시 데이터 (이제 Outfit[] 구조를 사용)
+const temporaryOutfits: Outfit[] = [
+  {
+    id: "1",
+    member: "정원",
+    event: "공항",
+    date: "2024-03-15",
+    image: ["https://i.imgur.com/4QZt5Gx.jpg"],
+    description: "정원의 공항 패션",
+    items: [
+      { brand: "ADER ERROR", item: "Oversized T-shirt", price: 189000, style: ["꾸안꾸", "모노톤"], link: "https://www.musinsa.com/app/goods/123456", currency: "₩" }
+    ],
+    isSaved: false
+  },
+  {
+    id: "2",
+    member: "성훈",
+    event: "위버스 셀카",
+    date: "2024-03-14",
+    image: ["https://i.imgur.com/5QZt5Gx.jpg"],
+    description: "성훈의 위버스 셀카 패션",
+    items: [
+      { brand: "BALENCIAGA", item: "Track Jacket", price: 289000, style: ["스트릿", "오버사이즈"], link: "https://www.musinsa.com/app/goods/123457", currency: "₩" }
+    ],
+    isSaved: false
+  },
+  {
+    id: "3",
+    member: "희승",
+    event: "콘서트",
+    date: "2024-03-13",
+    image: ["https://i.imgur.com/6QZt5Gx.jpg"],
+    description: "희승의 콘서트 패션",
+    items: [
+      { brand: "SAINT LAURENT", item: "Leather Jacket", price: 389000, style: ["올블랙", "시크"], link: "https://www.musinsa.com/app/goods/123458", currency: "₩" }
+    ],
+    isSaved: false
+  }
+];
+
+const eventCategories = [
+  { id: "all", label: "전체" },
+  { id: "공항", label: "공항" },
+  { id: "방송", label: "방송" },
+  { id: "행사", label: "행사" },
+  { id: "화보", label: "화보" },
+  { id: "위버스 셀카", label: "위버스 셀카" },
+  { id: "콘서트", label: "콘서트" },
+  { id: "기타", label: "기타" },
+]
+
+const members = ["정원", "성훈", "희승", "니키", "제이", "제이크", "선우"]
+
+// Debounce hook (keeping it local as per original structure)
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
 
 export default function Home() {
+  const [outfits, setOutfits] = useState<Outfit[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<string>("all");
+  const [selectedMember, setSelectedMember] = useState<string>("all");
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+  const [filteredOutfits, setFilteredOutfits] = useState<Outfit[]>([]);
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
+  useEffect(() => {
+    console.log('Home page useEffect: Loading outfits...');
+    // Combine temporary data with loaded data, prioritize loaded data if IDs overlap
+    const temporaryOutfits: Outfit[] = [
+      // Your temporary outfit data here
+    ];
+
+    const loadedOutfits = loadOutfits().map(outfit => ({
+        ...outfit,
+        // Ensure nested item details conform to type
+        items: outfit.items ? outfit.items.map((item: any) => ({
+           ...item,
+           currency: item.currency ?? "", // Ensure currency exists
+           price: Number(item.price) || 0,
+           style: Array.isArray(item.style) ? item.style : [], // Ensure style is array
+           link: item.link || "", // Ensure link exists
+           description: item.description || "" // Ensure description exists
+        })) : [], // Ensure items is an array
+        isSaved: getFavoriteIds().includes(outfit.id) // Sync saved status
+     }));
+
+    console.log('Home page useEffect: Loaded outfits', loadedOutfits);
+
+    // Simple merge logic: Loaded data replaces temporary data with same ID
+    const mergedOutfits = temporaryOutfits.map(tempOutfit => {
+        const loaded = loadedOutfits.find(loadedOutfit => loadedOutfit.id === tempOutfit.id);
+        return loaded ? loaded : tempOutfit;
+    });
+    // Add loaded outfits that were not in temporary data
+    loadedOutfits.forEach(loadedOutfit => {
+        if (!mergedOutfits.some(merged => merged.id === loadedOutfit.id)) {
+            mergedOutfits.push(loadedOutfit);
+        }
+    });
+
+    setOutfits(mergedOutfits);
+    setFavoriteIds(getFavoriteIds());
+  }, []);
+
+  // 찜 상태가 변경될 때마다 아웃핏 목록 업데이트
+  useEffect(() => {
+    const favoriteIds = getFavoriteIds();
+    setOutfits(prevOutfits =>
+      prevOutfits.map(outfit => ({
+        ...outfit,
+        isSaved: favoriteIds.includes(outfit.id)
+      }))
+    );
+  }, []);
+
+  // 이벤트별 필터링
+  const eventFilteredOutfits = selectedEvent === "all"
+    ? outfits
+    : outfits.filter(outfit => outfit.event === selectedEvent);
+
+  // 멤버별 필터링
+  const memberFilteredOutfits = selectedMember === "all"
+    ? outfits
+    : outfits.filter(outfit => outfit.member === selectedMember);
+
+  // 날짜순 정렬 (전체 아웃핏 기준)
+  const recentOutfits = [...outfits].sort((a, b) =>
+    new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+
+  // 날짜별로 아웃핏 그룹화
+  const groupedRecentOutfits: { [date: string]: Outfit[] } = recentOutfits.reduce((acc, outfit) => {
+    const date = outfit.date;
+    if (!acc[date]) {
+      acc[date] = [];
+      }
+    acc[date].push(outfit);
+      return acc;
+  }, {} as { [date: string]: Outfit[] });
+
+  // 멤버별 최신 아웃핏 (필터링된 멤버 기준)
+  const memberLatestOutfits = [...memberFilteredOutfits].sort((a, b) =>
+    new Date(b.date).getTime() - new Date(a.date).getTime()
+  ).slice(0, 6);
+
+  const handleToggleFavorite = (e: React.MouseEvent, outfitId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleFavorite(outfitId);
+
+    // 찜 상태 업데이트
+    setOutfits(prevOutfits =>
+      prevOutfits.map(outfit => ({
+        ...outfit,
+        isSaved: outfit.id === outfitId ? !outfit.isSaved : outfit.isSaved
+      }))
+    );
+  };
+
+  const FashionCard = ({ outfit }: { outfit: Outfit }) => (
+    <Link
+      href={`/look/${encodeURIComponent(outfit.member)}/${outfit.date}/${encodeURIComponent(outfit.event)}`}
+      key={outfit.id}
+    >
+      <Card className="overflow-hidden hover:shadow-lg transition-shadow transition-transform hover:scale-105 rounded-none">
+        <CardContent className="p-0">
+          <div className="relative aspect-[3/4]">
+            <img
+              src={Array.isArray(outfit.image) ? outfit.image[0] : outfit.image[0]}
+              alt={`${outfit.member}의 ${outfit.event} 패션`}
+              className="object-cover w-full h-full"
+            />
+          </div>
+        </CardContent>
+        <CardFooter className="p-4">
+          <div className="flex justify-between items-start w-full">
+            <div>
+              <h3 className="font-semibold text-lg">{outfit.event}</h3>
+              <p className="text-sm text-muted-foreground">{outfit.date}</p>
+              {/* Display info for the first item as an example */}
+              {outfit.items.length > 0 && (
+                <>
+                  <p className="text-sm mb-2">{outfit.items[0].brand}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {outfit.items[0].style.map((style, idx) => (
+                      <Badge key={idx} variant="secondary" className="rounded-none">
+                        {style}
+                      </Badge>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={outfit.isSaved ? "text-red-500" : ""}
+              onClick={(e) => handleToggleFavorite(e, outfit.id)}
+            >
+              <Heart className="h-5 w-5" />
+            </Button>
+          </div>
+        </CardFooter>
+      </Card>
+    </Link>
+  )
+
+  const LatestCard = ({ outfit }: { outfit: Outfit }) => (
+    <Link
+      href={`/look/${encodeURIComponent(outfit.member)}/${outfit.date}/${encodeURIComponent(outfit.event)}`}
+      key={outfit.id}
+    >
+      <Card className="overflow-hidden hover:shadow-lg transition-shadow rounded-lg flex flex-row">
+        <CardContent className="p-4 flex-grow">
+          <div className="flex flex-col justify-between h-full">
+            <div>
+              <h3 className="font-bold text-lg mb-1">{outfit.event}</h3>
+              <p className="text-sm text-muted-foreground mb-1">{outfit.date}</p>
+              {outfit.items.length > 0 && (
+                <p className="text-sm text-muted-foreground line-clamp-1">{outfit.items[0].brand} - {outfit.items[0].item}</p>
+              )}
+              <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{outfit.description}</p>
+            </div>
+            {/* 찜 버튼 */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className={outfit.isSaved ? "text-red-500" : "text-muted-foreground"}
+              onClick={(e) => handleToggleFavorite(e, outfit.id)}
+            >
+              <Heart className="h-5 w-5" />
+            </Button>
+          </div>
+        </CardContent>
+        <div className="relative w-24 h-24 flex-shrink-0 m-4">
+            <img
+              src={Array.isArray(outfit.image) ? outfit.image[0] : outfit.image[0]}
+              alt={`${outfit.member}의 ${outfit.event} 패션`}
+              className="object-cover w-full h-full rounded-md"
+            />
+          </div>
+      </Card>
+    </Link>
+  )
+
   return (
     <div className="flex min-h-screen flex-col">
-      <Navbar />
+      <main className="flex-1">
       {/* Hero Section */}
       <section className="flex flex-col items-center justify-center space-y-4 pt-24 pb-12 text-center">
-        <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
-          당신의 비즈니스를 위한<br />
-          최고의 SaaS 솔루션
-        </h1>
-        <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl dark:text-gray-400">
-          비즈니스 성장을 위한 모든 도구를 한 곳에서 만나보세요.
-          지금 바로 시작하세요.
+          <h1 className="text-5xl font-extrabold tracking-tight mb-2">StyleSync</h1>
+          <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl font-medium">
+          Discover the latest K-pop fashion trends and brand information.<br />
+          Get inspired by your favorite idols' styles.
         </p>
-        <div className="flex flex-col gap-4 sm:flex-row">
-          <StartDialog />
-          <Button size="lg" variant="outline">
-            데모 신청하기
-          </Button>
+      </section>
+
+        {/* 활동별 섹션 */}
+        <section className="w-full py-12">
+          <div className="container px-4 md:px-6">
+            <h2 className="text-2xl font-bold mb-6">활동별</h2>
+            <div className="flex gap-2 flex-wrap mb-8">
+              {eventCategories.map(category => (
+                <Button
+                  key={category.id}
+                  variant={selectedEvent === category.id ? "default" : "outline"}
+                  className="rounded-none"
+                  onClick={() => setSelectedEvent(category.id)}
+                >
+                  {category.label}
+                </Button>
+              ))}
+            </div>
+            <Carousel
+              plugins={[
+                Autoplay({ delay: 2000, stopOnInteraction: true }),
+              ]}
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-4">
+                {eventFilteredOutfits.length > 0 ? (
+                  eventFilteredOutfits.map((outfit) => (
+                    <CarouselItem key={outfit.id} className="pl-4 basis-1/3">
+                      <div className="p-1">
+                        <FashionCard outfit={outfit} />
+                      </div>
+                    </CarouselItem>
+                  ))
+                ) : (
+                  <div className="pl-4 col-span-full text-center py-8 text-muted-foreground">
+                    해당 카테고리의 아이템이 없습니다.
+                  </div>
+                )}
+              </CarouselContent>
+              <CarouselPrevious />
+              <CarouselNext />
+            </Carousel>
+          </div>
+        </section>
+
+        {/* 멤버별 섹션 */}
+        <section className="w-full py-12 bg-muted/50">
+          <div className="container px-4 md:px-6">
+            <h2 className="text-2xl font-bold mb-6">멤버별</h2>
+            <div className="flex gap-2 flex-wrap mb-8">
+            <Button
+              variant={selectedMember === "all" ? "default" : "outline"}
+              className="rounded-none"
+              onClick={() => setSelectedMember("all")}
+            >
+                전체
+            </Button>
+            {members.map(member => (
+              <Button
+                key={member}
+                variant={selectedMember === member ? "default" : "outline"}
+                className="rounded-none"
+                onClick={() => setSelectedMember(member)}
+              >
+                {member}
+              </Button>
+            ))}
+          </div>
+            <Carousel
+              opts={{
+                align: "start",
+              }}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-4">
+                {memberLatestOutfits.map((outfit) => (
+                  <CarouselItem key={outfit.id} className="pl-4 basis-1/3">
+                    <div className="p-1">
+                      <FashionCard outfit={outfit} />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious />
+              <CarouselNext />
+            </Carousel>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-50 dark:bg-gray-900">
+        {/* 최신순 섹션 */}
+        <section className="w-full py-12">
         <div className="container px-4 md:px-6">
-          <div className="grid gap-6 lg:grid-cols-3 lg:gap-12">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-yellow-500" />
-                  빠른 성장
-                </CardTitle>
-                <CardDescription>
-                  최적화된 도구로 비즈니스 성장을 가속화하세요.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span>실시간 분석</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span>자동화된 워크플로우</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span>스마트 인사이트</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-blue-500" />
-                  쉬운 통합
-                </CardTitle>
-                <CardDescription>
-                  기존 도구들과 원활하게 통합되어 작동합니다.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span>API 연동</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span>플러그인 지원</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span>맞춤형 통합</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-purple-500" />
-                  안전한 보안
-                </CardTitle>
-                <CardDescription>
-                  최고 수준의 보안으로 데이터를 안전하게 보호합니다.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span>엔드투엔드 암호화</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span>2단계 인증</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span>정기 보안 감사</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
+            <h2 className="text-2xl font-bold mb-6">최신순</h2>
+            <Carousel
+              opts={{
+                align: "start",
+              }}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-4">
+                {recentOutfits.map((outfit) => (
+                  <CarouselItem key={outfit.id} className="pl-4 basis-1/3">
+                    <div className="p-1">
+                      <LatestCard outfit={outfit} />
+                    </div>
+                  </CarouselItem>
+            ))}
+              </CarouselContent>
+              <CarouselPrevious />
+              <CarouselNext />
+            </Carousel>
         </div>
       </section>
-
-      {/* CTA Section */}
-      <section className="w-full py-12 md:py-24 lg:py-32">
-        <div className="container px-4 md:px-6">
-          <div className="flex flex-col items-center justify-center space-y-4 text-center">
-            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-              지금 바로 시작하세요
-            </h2>
-            <p className="mx-auto max-w-[600px] text-gray-500 md:text-xl dark:text-gray-400">
-              14일 무료 체험으로 모든 기능을 경험해보세요.
-              신용카드 정보가 필요하지 않습니다.
-            </p>
-            <StartDialog />
-          </div>
-        </div>
-      </section>
+      </main>
     </div>
   );
 }

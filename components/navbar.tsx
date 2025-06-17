@@ -1,65 +1,65 @@
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
-import Link from "next/link";
-import { StartDialog } from "@/components/start-dialog";
-import { LoginDialog } from "@/components/login-dialog";
+"use client";
 
-const navigation = [
-  { name: "기능", href: "#features" },
-  { name: "가격", href: "#pricing" },
-  { name: "문서", href: "#docs" },
-  { name: "블로그", href: "#blog" },
-];
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Heart, Shield, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
 
 export function Navbar() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const handleSearch = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter' && searchTerm.trim() !== '') {
+      router.push(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
+    }
+  };
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center">
-        <div className="mr-4 flex">
-          <Link href="/" className="mr-6 flex items-center space-x-2">
-            <span className="font-bold">SaaS Platform</span>
+    <nav className="border-b">
+      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="flex items-center gap-8">
+        <Link href="/" className="text-xl font-bold">
+            StyleSync
+          </Link>
+          <Link href="/" className="text-lg font-medium text-muted-foreground">
+          K-Fashion
+        </Link>
+        </div>
+        <div className="flex items-center gap-4">
+          {/* <Link href="/members">
+            <Button variant="ghost">멤버</Button>
+          </Link> */}
+          <Link href="/gallery">
+            <Button variant="ghost">갤러리</Button>
+          </Link>
+          <div className="relative w-full max-w-sm">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input 
+              type="text" 
+              placeholder="검색..." 
+              className="w-full md:w-[200px] pl-9"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleSearch}
+            />
+          </div>
+          <Link href="/favorites">
+            <Button variant="ghost" size="icon">
+              <Heart className="h-5 w-5" />
+            </Button>
+          </Link>
+          <Link href="/admin/upload">
+            <Button variant="ghost" size="icon">
+              <Shield className="h-5 w-5" />
+            </Button>
           </Link>
         </div>
-        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-          <nav className="flex items-center space-x-6 text-sm font-medium">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className="transition-colors hover:text-foreground/80 text-foreground/60"
-              >
-                {item.name}
-              </Link>
-            ))}
-          </nav>
-          <div className="flex items-center space-x-2">
-            <LoginDialog />
-            <StartDialog />
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="md:hidden">
-                  <Menu className="h-5 w-5" />
-                  <span className="sr-only">메뉴 열기</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right">
-                <nav className="flex flex-col space-y-4">
-                  {navigation.map((item) => (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      className="text-sm font-medium transition-colors hover:text-foreground/80 text-foreground/60"
-                    >
-                      {item.name}
-                    </Link>
-                  ))}
-                </nav>
-              </SheetContent>
-            </Sheet>
-          </div>
-        </div>
       </div>
-    </header>
+    </nav>
   );
 } 
