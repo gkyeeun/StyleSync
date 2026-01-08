@@ -93,7 +93,7 @@ export default function FavoritesPage() {
                               <div key={index} className="mt-2">
                                 <p className="mb-1 text-sm">{item.brand}</p>
                             <div className="flex flex-wrap gap-2">
-                              {item.style.map((style) => (
+                              {item.style.map((style:any) => (
                                 <Badge key={style} variant="secondary" className="rounded-none">
                                   {style}
                                 </Badge>

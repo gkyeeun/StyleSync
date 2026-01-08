@@ -119,7 +119,9 @@ export const events: Event[] = [
           }
         ],
         images: ['/outfits/heeseung-music-bank-2024-03-1.jpg'],
-        description: '뮤직뱅크 출연 의상'
+        description: '뮤직뱅크 출연 의상',
+        member: '',
+        image: []
       },
       {
         id: 'jay-music-bank-2024-03',
@@ -133,7 +135,8 @@ export const events: Event[] = [
             brand: 'Balenciaga',
             price: 3200000,
             purchaseLink: 'https://www.balenciaga.com/',
-            image: '/outfits/jay-jacket-1.jpg'
+            image: '/outfits/jay-jacket-1.jpg',
+            purchaseOptions: []
           },
           {
             id: 'jay-pants-1',
@@ -141,13 +144,18 @@ export const events: Event[] = [
             brand: 'Diesel',
             price: 450000,
             purchaseLink: 'https://www.diesel.com/',
-            image: '/outfits/jay-pants-1.jpg'
+            image: '/outfits/jay-pants-1.jpg',
+            purchaseOptions: []
           }
         ],
         images: ['/outfits/jay-music-bank-2024-03-1.jpg'],
-        description: '뮤직뱅크 출연 시 착용한 스트릿 룩'
+        description: '뮤직뱅크 출연 시 착용한 스트릿 룩',
+        member: '',
+        image: []
       }
-    ]
+    ],
+    location: '',
+    description: ''
   },
   {
     id: 'inkigayo-2024-03',
@@ -167,7 +175,8 @@ export const events: Event[] = [
             brand: 'Acne Studios',
             price: 780000,
             purchaseLink: 'https://www.acnestudios.com/',
-            image: '/outfits/jake-sweater-1.jpg'
+            image: '/outfits/jake-sweater-1.jpg',
+            purchaseOptions: []
           },
           {
             id: 'jake-pants-1',
@@ -175,13 +184,18 @@ export const events: Event[] = [
             brand: 'Isabel Marant',
             price: 650000,
             purchaseLink: 'https://www.isabelmarant.com/',
-            image: '/outfits/jake-pants-1.jpg'
+            image: '/outfits/jake-pants-1.jpg',
+            purchaseOptions: []
           }
         ],
         images: ['/outfits/jake-inkigayo-2024-03-1.jpg'],
-        description: '인기가요 출연 시 착용한 캐주얼 룩'
+        description: '인기가요 출연 시 착용한 캐주얼 룩',
+        member: '',
+        image: []
       }
-    ]
+    ],
+    location: '',
+    description: ''
   },
   {
     id: 'fanmeeting-2024-03',
@@ -201,7 +215,8 @@ export const events: Event[] = [
             brand: 'Thom Browne',
             price: 1200000,
             purchaseLink: 'https://www.thombrowne.com/',
-            image: '/outfits/sunghoon-shirt-1.jpg'
+            image: '/outfits/sunghoon-shirt-1.jpg',
+            purchaseOptions: []
           },
           {
             id: 'sunghoon-pants-1',
@@ -209,12 +224,17 @@ export const events: Event[] = [
             brand: 'Thom Browne',
             price: 980000,
             purchaseLink: 'https://www.thombrowne.com/',
-            image: '/outfits/sunghoon-pants-1.jpg'
+            image: '/outfits/sunghoon-pants-1.jpg',
+            purchaseOptions: []
           }
         ],
         images: ['/outfits/sunghoon-fanmeeting-2024-03-1.jpg'],
-        description: '팬미팅에서 착용한 프레피 룩'
+        description: '팬미팅에서 착용한 프레피 룩',
+        member: '',
+        image: []
       }
-    ]
+    ],
+    location: '',
+    description: ''
   }
 ]; 

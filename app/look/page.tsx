@@ -47,7 +47,7 @@ export default function AllLooks() {
                 <div className="text-base">{item.event} · {item.date}</div>
                 <div className="text-sm text-muted-foreground">₩ {item.price?.toLocaleString()}</div>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {item.style.map((style) => (
+                  {item.style.map((style:any) => (
                     <Badge key={style} variant="secondary" className="rounded-none border-0 bg-gray-100 font-medium text-gray-700">
                       {style}
                     </Badge>

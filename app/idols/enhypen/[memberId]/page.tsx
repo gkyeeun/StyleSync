@@ -75,14 +75,14 @@ export default function MemberPage({ params }: { params: { memberId: string } })
                     <CardContent>
                       <div className="relative mb-4 h-64 w-full">
                         <Image
-                          src={outfit.images[0]}
-                          alt={outfit.description}
+                          src={outfit.image[0]}
+                          alt={outfit.description || ''}
                           fill
                           className="rounded-lg object-cover"
                         />
                       </div>
                       <div className="space-y-4">
-                        {outfit.items.map((item) => (
+                        {outfit.items.map((item:any) => (
                           <div key={item.id} className="space-y-2">
                             <div className="flex items-center justify-between">
                               <div>
@@ -110,7 +110,7 @@ export default function MemberPage({ params }: { params: { memberId: string } })
                             </div>
                             {expandedItems.has(item.id) && (
                               <div className="space-y-2 border-l-2 border-gray-200 pl-4">
-                                {item.purchaseOptions.map((option) => (
+                                {item.purchaseOptions.map((option:any) => (
                                   <div
                                     key={option.store}
                                     className="flex items-center justify-between text-sm"

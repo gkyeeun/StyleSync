@@ -25,7 +25,8 @@ const fashionItems: FashionItem[] = [
     link: "https://www.musinsa.com/app/goods/123456",
     description: "정원의 공항 패션",
     price: 189000,
-    isSaved: false
+    isSaved: false,
+    items: []
   },
   {
     id: "2",
@@ -39,7 +40,8 @@ const fashionItems: FashionItem[] = [
     link: "https://www.musinsa.com/app/goods/123457",
     description: "성훈의 위버스 셀카 패션",
     price: 289000,
-    isSaved: false
+    isSaved: false,
+    items: []
   },
   {
     id: "3",
@@ -53,7 +55,8 @@ const fashionItems: FashionItem[] = [
     link: "https://www.musinsa.com/app/goods/123458",
     description: "희승의 콘서트 패션",
     price: 389000,
-    isSaved: false
+    isSaved: false,
+    items: []
   }
 ]
 
@@ -265,7 +268,7 @@ export default function MemberPage({ params }: { params: { memberId: string } })
                           <p className="text-sm text-muted-foreground">{item.date}</p>
                           <p className="mb-2 text-sm">{item.brand}</p>
                           <div className="flex flex-wrap gap-2">
-                            {item.style.map((style) => (
+                            {item.style.map((style:any) => (
                               <Badge key={style} variant="secondary" className="rounded-none">
                                 {style}
                               </Badge>

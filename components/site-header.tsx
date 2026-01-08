@@ -2,7 +2,7 @@ import Link from "next/link"
 
 import { siteConfig } from "@/config/site"
 import { buttonVariants } from "@/components/ui/button"
-import { Icons } from "@/components/icons"
+import { Github, Twitter } from "lucide-react"
 import { MainNav } from "@/components/main-nav"
 import { ThemeToggle } from "@/components/theme-toggle"
 
@@ -24,7 +24,7 @@ export function SiteHeader() {
                   variant: "ghost",
                 })}
               >
-                <Icons.gitHub className="size-5" />
+                <Github className="size-5" />
                 <span className="sr-only">GitHub</span>
               </div>
             </Link>
@@ -39,7 +39,7 @@ export function SiteHeader() {
                   variant: "ghost",
                 })}
               >
-                <Icons.twitter className="size-5 fill-current" />
+                <Twitter className="size-5 fill-current" />
                 <span className="sr-only">Twitter</span>
               </div>
             </Link>

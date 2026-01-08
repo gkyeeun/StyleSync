@@ -31,7 +31,21 @@ export default function AdminUploadPage() {
   const [editId, setEditId] = useState<string | null>(null);
   // 여러 아이템 입력 세트
   const [itemFields, setItemFields] = useState<ItemDetail[]>([
-    { brand: "", item: "", price: 0, style: [], link: "", description: "", currency: "₩" }
+    {
+      brand: "",
+      item: "",
+      price: 0,
+      style: [],
+      link: "",
+      description: "",
+      currency: "₩",
+      name: "",
+      purchaseLink: "",
+      image: "",
+      purchaseOptions: [],
+      availability: "",
+      lastUpdated: ""
+    }
   ]);
 
   // 최초 마운트 시 localStorage에서 불러오기
@@ -115,7 +129,13 @@ export default function AdminUploadPage() {
       // OCR 결과 자동 파싱 및 필드 자동 입력
       const parsed = parseFashionText(text);
       setFields(f => ({ ...f, ...parsed }));
-      setItemFields([{ brand: parsed.brand, item: parsed.item, price: Number(parsed.price) || 0, style: [], link: "", description: parsed.etc || "", currency: "₩" }]);
+      setItemFields([{
+        brand: parsed.brand, item: parsed.item, price: Number(parsed.price) || 0, style: [], link: "", description: parsed.etc || "", currency: "₩",
+        name: "",
+        purchaseLink: "",
+        image: "",
+        purchaseOptions: []
+      }]);
       await worker.terminate();
     } catch (err) {
       console.error('OCR Error:', err);
@@ -126,7 +146,13 @@ export default function AdminUploadPage() {
 
   // 아이템 입력 세트 추가/삭제
   const handleAddItemField = () => {
-    setItemFields([...itemFields, { brand: "", item: "", price: 0, style: [], link: "", description: "", currency: "₩" }]);
+    setItemFields([...itemFields, {
+      brand: "", item: "", price: 0, style: [], link: "", description: "", currency: "₩",
+      name: "",
+      purchaseLink: "",
+      image: "",
+      purchaseOptions: []
+    }]);
   };
 
   const handleRemoveItemField = (idx: number) => {
@@ -195,17 +221,19 @@ export default function AdminUploadPage() {
         description: ""
       });
       setImages([]);
-      setItemFields([{ brand: "", item: "", price: 0, style: [], link: "", description: "", currency: "₩" }]);
+      setItemFields([{
+        brand: "", item: "", price: 0, style: [], link: "", description: "", currency: "₩",
+        name: "",
+        purchaseLink: "",
+        image: "",
+        purchaseOptions: []
+      }]);
       setEditId(null);
 
       router.refresh();
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error saving outfit:", error);
-      if (error instanceof Error && error.message === "QUOTA_EXCEEDED") {
-        alert("이미지 용량이 너무 커서 저장할 수 없습니다.\n이미지 개수나 크기를 줄인 후 다시 시도해 주세요.");
-      } else {
-        alert("아이템 저장 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
-      }
+      alert("아이템 저장 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
     }

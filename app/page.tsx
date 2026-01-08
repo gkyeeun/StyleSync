@@ -48,7 +48,13 @@ const temporaryOutfits: Outfit[] = [
     image: ["https://i.imgur.com/4QZt5Gx.jpg"],
     description: "정원의 공항 패션",
     items: [
-      { brand: "ADER ERROR", item: "Oversized T-shirt", price: 189000, style: ["꾸안꾸", "모노톤"], link: "https://www.musinsa.com/app/goods/123456", currency: "₩" }
+      {
+        brand: "ADER ERROR", item: "Oversized T-shirt", price: 189000, style: ["꾸안꾸", "모노톤"], link: "https://www.musinsa.com/app/goods/123456", currency: "₩",
+        name: "",
+        purchaseLink: "",
+        image: "",
+        purchaseOptions: []
+      }
     ],
     isSaved: false
   },
@@ -60,7 +66,13 @@ const temporaryOutfits: Outfit[] = [
     image: ["https://i.imgur.com/5QZt5Gx.jpg"],
     description: "성훈의 위버스 셀카 패션",
     items: [
-      { brand: "BALENCIAGA", item: "Track Jacket", price: 289000, style: ["스트릿", "오버사이즈"], link: "https://www.musinsa.com/app/goods/123457", currency: "₩" }
+      {
+        brand: "BALENCIAGA", item: "Track Jacket", price: 289000, style: ["스트릿", "오버사이즈"], link: "https://www.musinsa.com/app/goods/123457", currency: "₩",
+        name: "",
+        purchaseLink: "",
+        image: "",
+        purchaseOptions: []
+      }
     ],
     isSaved: false
   },
@@ -72,7 +84,13 @@ const temporaryOutfits: Outfit[] = [
     image: ["https://i.imgur.com/6QZt5Gx.jpg"],
     description: "희승의 콘서트 패션",
     items: [
-      { brand: "SAINT LAURENT", item: "Leather Jacket", price: 389000, style: ["올블랙", "시크"], link: "https://www.musinsa.com/app/goods/123458", currency: "₩" }
+      {
+        brand: "SAINT LAURENT", item: "Leather Jacket", price: 389000, style: ["올블랙", "시크"], link: "https://www.musinsa.com/app/goods/123458", currency: "₩",
+        name: "",
+        purchaseLink: "",
+        image: "",
+        purchaseOptions: []
+      }
     ],
     isSaved: false
   }
@@ -239,7 +257,7 @@ export default function Home() {
                 <>
                   <p className="mb-2 text-sm">{outfit.items[0].brand}</p>
                   <div className="flex flex-wrap gap-2">
-                    {outfit.items[0].style.map((style, idx) => (
+                    {outfit.items[0].style.map((style:any, idx:any) => (
                       <Badge key={idx} variant="secondary" className="rounded-none">
                         {style}
                       </Badge>
