@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Loader2 } from "lucide-react";
+import { Loader2, LogOut } from "lucide-react";
 import { createWorker } from "tesseract.js";
 import { saveOutfit, loadOutfits, updateOutfit, deleteOutfit } from "@/lib/fashionStorage";
 import { Outfit, ItemDetail } from "@/types/fashion";
@@ -14,9 +14,12 @@ import { useRouter } from "next/navigation";
 import { Upload, X } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { getFavoriteIds } from "@/lib/favorites";
+import { isAuthenticated, signOut } from "@/lib/auth";
 
 export default function AdminUploadPage() {
   const router = useRouter();
+  const [isAuth, setIsAuth] = useState<boolean>(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [images, setImages] = useState<string[]>([]);
   const [imageFiles, setImageFiles] = useState<string[]>([]);
   const [ocrText, setOcrText] = useState("");
@@ -48,14 +51,33 @@ export default function AdminUploadPage() {
     }
   ]);
 
+  // 인증 확인
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      router.push("/admin/login");
+      return;
+    }
+    setIsAuth(true);
+    setIsCheckingAuth(false);
+  }, [router]);
+
   // 최초 마운트 시 데이터베이스에서 불러오기
   useEffect(() => {
+    if (!isAuth) return;
+    
     const loadData = async () => {
       const outfits = await loadOutfits();
       setOutfitList(outfits);
     };
     loadData();
-  }, []);
+  }, [isAuth]);
+
+  // 로그아웃 핸들러
+  const handleLogout = async () => {
+    await signOut();
+    router.push("/admin/login");
+    router.refresh();
+  };
 
   const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -270,9 +292,24 @@ export default function AdminUploadPage() {
     }
   };
 
+  // 인증 확인 중이면 로딩 표시
+  if (isCheckingAuth || !isAuth) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="size-8 animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto p-4">
-      <h1 className="mb-6 text-2xl font-bold">Upload Fashion Item</h1>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Upload Fashion Item</h1>
+        <Button variant="outline" onClick={handleLogout}>
+          <LogOut className="mr-2 size-4" />
+          로그아웃
+        </Button>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Member Info Section */}
