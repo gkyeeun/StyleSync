@@ -68,25 +68,33 @@ export default function MemberPage({ params }: { params: { memberId: string } })
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000])
 
   useEffect(() => {
-    const loaded = loadFashionItems().map(item => ({
-      ...item,
-      style: item.style as Style[],
-      isSaved: getFavoriteIds().includes(item.id),
-      description: item.description ?? "",
-      price: Number(item.price) || 0,
-    }));
-    setItems(loaded);
+    const loadData = async () => {
+      const loadedData = await loadFashionItems();
+      const favoriteIds = await getFavoriteIds();
+      const loaded = loadedData.map(item => ({
+        ...item,
+        style: item.style as Style[],
+        isSaved: favoriteIds.includes(item.id),
+        description: item.description ?? "",
+        price: Number(item.price) || 0,
+      }));
+      setItems(loaded);
+    };
+    loadData();
   }, []);
 
   // 찜 상태가 변경될 때마다 아이템 목록 업데이트
   useEffect(() => {
-    const favoriteIds = getFavoriteIds();
-    setItems(prevItems => 
-      prevItems.map(item => ({
-        ...item,
-        isSaved: favoriteIds.includes(item.id)
-      }))
-    );
+    const updateFavorites = async () => {
+      const favoriteIds = await getFavoriteIds();
+      setItems(prevItems => 
+        prevItems.map(item => ({
+          ...item,
+          isSaved: favoriteIds.includes(item.id)
+        }))
+      );
+    };
+    updateFavorites();
   }, []);
 
   // 멤버별 필터링

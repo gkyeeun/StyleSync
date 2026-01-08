@@ -16,24 +16,32 @@ export default function FavoritesPage() {
   const [favoriteOutfits, setFavoriteOutfits] = useState<Outfit[]>([])
 
   useEffect(() => {
-    const loaded = loadOutfits().map(outfit => ({
-      ...outfit,
-      isSaved: getFavoriteIds().includes(outfit.id)
-    }));
-    setOutfits(loaded);
+    const loadData = async () => {
+      const loadedData = await loadOutfits();
+      const favoriteIds = await getFavoriteIds();
+      const loaded = loadedData.map(outfit => ({
+        ...outfit,
+        isSaved: favoriteIds.includes(outfit.id)
+      }));
+      setOutfits(loaded);
+    };
+    loadData();
   }, []);
 
   // 찜 상태가 변경될 때마다 아이템 목록 업데이트
   useEffect(() => {
-    const favoriteIds = getFavoriteIds();
-    const favoriteOutfits = outfits.filter(outfit => favoriteIds.includes(outfit.id));
-    setFavoriteOutfits(favoriteOutfits);
+    const updateFavorites = async () => {
+      const favoriteIds = await getFavoriteIds();
+      const favoriteOutfits = outfits.filter(outfit => favoriteIds.includes(outfit.id));
+      setFavoriteOutfits(favoriteOutfits);
+    };
+    updateFavorites();
   }, [outfits]);
 
-  const handleToggleFavorite = (e: React.MouseEvent, outfitId: string) => {
+  const handleToggleFavorite = async (e: React.MouseEvent, outfitId: string) => {
     e.preventDefault();
     e.stopPropagation();
-    toggleFavorite(outfitId);
+    await toggleFavorite(outfitId);
     
     // 찜 상태 업데이트
     setOutfits(prevOutfits => 

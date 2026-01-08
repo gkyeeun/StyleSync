@@ -20,23 +20,31 @@ export default function LookDetail() {
   const [outfit, setOutfit] = useState<Outfit | null>(null);
 
   useEffect(() => {
-    if (decodedMember && decodedEvent) {
-      const allOutfits = loadOutfits();
-      // 해당 착장(멤버+날짜+카테고리)에 속한 아웃핏 찾기
-      const found = allOutfits.find(
-        (outfit) =>
-          outfit.member === decodedMember &&
-          outfit.date === date &&
-          outfit.event === decodedEvent
-      );
-      setOutfit(found || null);
-    }
-  }, [decodedMember, decodedEvent]);
+    const loadData = async () => {
+      if (decodedMember && decodedEvent) {
+        const allOutfits = await loadOutfits();
+        // 해당 착장(멤버+날짜+카테고리)에 속한 아웃핏 찾기
+        const found = allOutfits.find(
+          (outfit) =>
+            outfit.member === decodedMember &&
+            outfit.date === date &&
+            outfit.event === decodedEvent
+        );
+        setOutfit(found || null);
+      }
+    };
+    loadData();
+  }, [decodedMember, decodedEvent, date]);
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (outfit && window.confirm('이 룩을 삭제하시겠습니까?')) {
-      deleteOutfit(outfit.id);
-      router.push('/');
+      try {
+        await deleteOutfit(outfit.id);
+        router.push('/');
+      } catch (error) {
+        console.error('Error deleting outfit:', error);
+        alert('삭제 중 오류가 발생했습니다.');
+      }
     }
   };
 

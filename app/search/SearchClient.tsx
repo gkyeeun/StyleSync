@@ -75,40 +75,44 @@ export default function SearchClient() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const allOutfits = loadOutfits();
+    const loadData = async () => {
+      const allOutfits = await loadOutfits();
+      const favoriteIds = await getFavoriteIds();
 
-    const outfitsWithImages = allOutfits.filter(
-      (outfit) =>
-        Array.isArray(outfit.image) &&
-        outfit.image.length > 0 &&
-        outfit.image.some((img) => typeof img === "string" && img.trim() !== "")
-    );
-
-    const outfitsWithSavedStatus = outfitsWithImages.map((outfit) => ({
-      ...outfit,
-      isSaved: getFavoriteIds().includes(outfit.id),
-    }));
-
-    if (searchQuery) {
-      const lowerCaseQuery = searchQuery.toLowerCase();
-      const filtered = outfitsWithSavedStatus.filter(
+      const outfitsWithImages = allOutfits.filter(
         (outfit) =>
-          outfit.member.toLowerCase().includes(lowerCaseQuery) ||
-          outfit.event.toLowerCase().includes(lowerCaseQuery) ||
-          outfit.items.some(
-            (itemDetail) =>
-              itemDetail.brand.toLowerCase().includes(lowerCaseQuery) ||
-              itemDetail.item.toLowerCase().includes(lowerCaseQuery) ||
-              itemDetail.style.some((style: any) => style.toLowerCase().includes(lowerCaseQuery)) ||
-              (itemDetail.description && itemDetail.description.toLowerCase().includes(lowerCaseQuery))
-          )
+          Array.isArray(outfit.image) &&
+          outfit.image.length > 0 &&
+          outfit.image.some((img) => typeof img === "string" && img.trim() !== "")
       );
-      setOutfits(filtered);
-    } else {
-      setOutfits([]);
-    }
 
-    setLoading(false);
+      const outfitsWithSavedStatus = outfitsWithImages.map((outfit) => ({
+        ...outfit,
+        isSaved: favoriteIds.includes(outfit.id),
+      }));
+
+      if (searchQuery) {
+        const lowerCaseQuery = searchQuery.toLowerCase();
+        const filtered = outfitsWithSavedStatus.filter(
+          (outfit) =>
+            outfit.member.toLowerCase().includes(lowerCaseQuery) ||
+            outfit.event.toLowerCase().includes(lowerCaseQuery) ||
+            outfit.items.some(
+              (itemDetail) =>
+                itemDetail.brand.toLowerCase().includes(lowerCaseQuery) ||
+                (itemDetail.name && itemDetail.name.toLowerCase().includes(lowerCaseQuery)) ||
+                (itemDetail.style && Array.isArray(itemDetail.style) && itemDetail.style.some((style: any) => style.toLowerCase().includes(lowerCaseQuery))) ||
+                (itemDetail.description && itemDetail.description.toLowerCase().includes(lowerCaseQuery))
+            )
+        );
+        setOutfits(filtered);
+      } else {
+        setOutfits([]);
+      }
+
+      setLoading(false);
+    };
+    loadData();
   }, [searchQuery]);
 
   if (loading) {

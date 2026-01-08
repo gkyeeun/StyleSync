@@ -48,9 +48,13 @@ export default function AdminUploadPage() {
     }
   ]);
 
-  // 최초 마운트 시 localStorage에서 불러오기
+  // 최초 마운트 시 데이터베이스에서 불러오기
   useEffect(() => {
-    setOutfitList(loadOutfits());
+    const loadData = async () => {
+      const outfits = await loadOutfits();
+      setOutfitList(outfits);
+    };
+    loadData();
   }, []);
 
   const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -200,13 +204,15 @@ export default function AdminUploadPage() {
 
       if (editId) {
         // 수정 모드: 기존 아이템 업데이트
+        const favoriteIds = await getFavoriteIds();
         const updatedOutfit = {
           ...outfitData,
           id: editId,
-          isSaved: getFavoriteIds().includes(editId)
+          isSaved: favoriteIds.includes(editId)
         };
-        updateOutfit(updatedOutfit);
-        setOutfitList(loadOutfits());
+        await updateOutfit(updatedOutfit);
+        const updatedList = await loadOutfits();
+        setOutfitList(updatedList);
       } else {
         // 새 아이템 생성
         const newOutfit = await saveOutfit(outfitData);
@@ -253,10 +259,15 @@ export default function AdminUploadPage() {
   };
 
   // 삭제 버튼 클릭 시
-  const handleDelete = (id: string) => {
-    const updated = loadOutfits().filter(i => i.id !== id);
-    localStorage.setItem("fashionItems", JSON.stringify(updated));
-    setOutfitList(updated);
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteOutfit(id);
+      const updatedList = await loadOutfits();
+      setOutfitList(updatedList);
+    } catch (error) {
+      console.error('Error deleting outfit:', error);
+      alert('아이템 삭제 중 오류가 발생했습니다.');
+    }
   };
 
   return (

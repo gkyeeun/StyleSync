@@ -41,10 +41,10 @@ const FashionCard = ({ outfit }: { outfit: Outfit }) => (
 );
 
 // 찜 토글 핸들러
-const handleToggleFavorite = (e: React.MouseEvent, outfitId: string) => {
+const handleToggleFavorite = async (e: React.MouseEvent, outfitId: string) => {
   e.preventDefault();
   e.stopPropagation();
-  toggleFavorite(outfitId);
+  await toggleFavorite(outfitId);
   // Note: State update will happen in the parent component
 };
 
@@ -56,33 +56,40 @@ export default function GalleryPage() {
   const [sortBy, setSortBy] = useState<string>("latest");
 
   useEffect(() => {
-    const allOutfits = loadOutfits();
-    
-    // Filter out outfits that have no images
-    const outfitsWithImages = allOutfits.filter(outfit => 
-      Array.isArray(outfit.image) && 
-      outfit.image.length > 0 && 
-      outfit.image.some(img => typeof img === 'string' && img.trim() !== '')
-    );
+    const loadData = async () => {
+      const allOutfits = await loadOutfits();
+      const favoriteIds = await getFavoriteIds();
+      
+      // Filter out outfits that have no images
+      const outfitsWithImages = allOutfits.filter(outfit => 
+        Array.isArray(outfit.image) && 
+        outfit.image.length > 0 && 
+        outfit.image.some(img => typeof img === 'string' && img.trim() !== '')
+      );
 
-    const outfitsWithSavedStatus = outfitsWithImages.map(outfit => ({
-      ...outfit,
-      isSaved: getFavoriteIds().includes(outfit.id)
-    }));
-    
-    setOutfits(outfitsWithSavedStatus);
-    setLoading(false);
+      const outfitsWithSavedStatus = outfitsWithImages.map(outfit => ({
+        ...outfit,
+        isSaved: favoriteIds.includes(outfit.id)
+      }));
+      
+      setOutfits(outfitsWithSavedStatus);
+      setLoading(false);
+    };
+    loadData();
   }, []);
 
   // 찜 상태가 변경될 때마다 아이템 목록 업데이트
   useEffect(() => {
-    const favoriteIds = getFavoriteIds();
-    setOutfits(prevOutfits => 
-      prevOutfits.map(outfit => ({
-        ...outfit,
-        isSaved: favoriteIds.includes(outfit.id)
-      }))
-    );
+    const updateFavorites = async () => {
+      const favoriteIds = await getFavoriteIds();
+      setOutfits(prevOutfits => 
+        prevOutfits.map(outfit => ({
+          ...outfit,
+          isSaved: favoriteIds.includes(outfit.id)
+        }))
+      );
+    };
+    updateFavorites();
   }, []);
 
   // 필터링 및 정렬된 아이템 목록

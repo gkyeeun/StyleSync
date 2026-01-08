@@ -137,53 +137,62 @@ export default function Home() {
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   useEffect(() => {
-    console.log('Home page useEffect: Loading outfits...');
-    // Combine temporary data with loaded data, prioritize loaded data if IDs overlap
-    const temporaryOutfits: Outfit[] = [
-      // Your temporary outfit data here
-    ];
+    const loadData = async () => {
+      console.log('Home page useEffect: Loading outfits...');
+      // Combine temporary data with loaded data, prioritize loaded data if IDs overlap
+      const temporaryOutfits: Outfit[] = [
+        // Your temporary outfit data here
+      ];
 
-    const loadedOutfits = loadOutfits().map(outfit => ({
-        ...outfit,
-        // Ensure nested item details conform to type
-        items: outfit.items ? outfit.items.map((item: any) => ({
-           ...item,
-           currency: item.currency ?? "", // Ensure currency exists
-           price: Number(item.price) || 0,
-           style: Array.isArray(item.style) ? item.style : [], // Ensure style is array
-           link: item.link || "", // Ensure link exists
-           description: item.description || "" // Ensure description exists
-        })) : [], // Ensure items is an array
-        isSaved: getFavoriteIds().includes(outfit.id) // Sync saved status
-     }));
+      const loadedOutfitsData = await loadOutfits();
+      const favoriteIdsData = await getFavoriteIds();
+      
+      const loadedOutfits = loadedOutfitsData.map(outfit => ({
+          ...outfit,
+          // Ensure nested item details conform to type
+          items: outfit.items ? outfit.items.map((item: any) => ({
+             ...item,
+             currency: item.currency ?? "", // Ensure currency exists
+             price: Number(item.price) || 0,
+             style: Array.isArray(item.style) ? item.style : [], // Ensure style is array
+             link: item.link || "", // Ensure link exists
+             description: item.description || "" // Ensure description exists
+          })) : [], // Ensure items is an array
+          isSaved: favoriteIdsData.includes(outfit.id) // Sync saved status
+       }));
 
-    console.log('Home page useEffect: Loaded outfits', loadedOutfits);
+      console.log('Home page useEffect: Loaded outfits', loadedOutfits);
 
-    // Simple merge logic: Loaded data replaces temporary data with same ID
-    const mergedOutfits = temporaryOutfits.map(tempOutfit => {
-        const loaded = loadedOutfits.find(loadedOutfit => loadedOutfit.id === tempOutfit.id);
-        return loaded ? loaded : tempOutfit;
-    });
-    // Add loaded outfits that were not in temporary data
-    loadedOutfits.forEach(loadedOutfit => {
-        if (!mergedOutfits.some(merged => merged.id === loadedOutfit.id)) {
-            mergedOutfits.push(loadedOutfit);
-        }
-    });
+      // Simple merge logic: Loaded data replaces temporary data with same ID
+      const mergedOutfits = temporaryOutfits.map(tempOutfit => {
+          const loaded = loadedOutfits.find(loadedOutfit => loadedOutfit.id === tempOutfit.id);
+          return loaded ? loaded : tempOutfit;
+      });
+      // Add loaded outfits that were not in temporary data
+      loadedOutfits.forEach(loadedOutfit => {
+          if (!mergedOutfits.some(merged => merged.id === loadedOutfit.id)) {
+              mergedOutfits.push(loadedOutfit);
+          }
+      });
 
-    setOutfits(mergedOutfits);
-    setFavoriteIds(getFavoriteIds());
+      setOutfits(mergedOutfits);
+      setFavoriteIds(favoriteIdsData);
+    };
+    loadData();
   }, []);
 
   // 찜 상태가 변경될 때마다 아웃핏 목록 업데이트
   useEffect(() => {
-    const favoriteIds = getFavoriteIds();
-    setOutfits(prevOutfits =>
-      prevOutfits.map(outfit => ({
-        ...outfit,
-        isSaved: favoriteIds.includes(outfit.id)
-      }))
-    );
+    const updateFavorites = async () => {
+      const favoriteIds = await getFavoriteIds();
+      setOutfits(prevOutfits =>
+        prevOutfits.map(outfit => ({
+          ...outfit,
+          isSaved: favoriteIds.includes(outfit.id)
+        }))
+      );
+    };
+    updateFavorites();
   }, []);
 
   // 이벤트별 필터링
