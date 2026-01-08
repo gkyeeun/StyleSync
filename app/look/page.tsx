@@ -14,8 +14,11 @@ export default function AllLooks() {
   const [items, setItems] = useState<FashionItem[]>([]);
 
   useEffect(() => {
-    const allItems = loadFashionItems();
-    setItems(allItems);
+    const loadData = async () => {
+      const allItems = await loadFashionItems();
+      setItems(allItems);
+    };
+    loadData();
   }, []);
 
   if (!items.length) {

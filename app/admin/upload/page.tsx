@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
 import { createWorker } from "tesseract.js";
-import { saveOutfit, loadOutfits, updateOutfit } from "@/lib/fashionStorage";
+import { saveOutfit, loadOutfits, updateOutfit, deleteOutfit } from "@/lib/fashionStorage";
 import { Outfit, ItemDetail } from "@/types/fashion";
 import { useRouter } from "next/navigation";
 import { Upload, X } from "lucide-react";

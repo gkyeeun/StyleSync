@@ -5,16 +5,17 @@ import { Outfit, ItemDetail } from '@/types/fashion'
 // GET: 특정 outfit 조회
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const { data: outfit, error } = await supabase
       .from('outfits')
       .select(`
         *,
         items (*)
       `)
-      .eq('id', params.id)
+      .eq('id', id)
       .single()
 
     if (error) throw error
@@ -65,9 +66,10 @@ export async function GET(
 // PUT: outfit 업데이트
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json()
     const outfitData: Outfit = body
 
@@ -84,7 +86,7 @@ export async function PUT(
         is_saved: outfitData.isSaved || false,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', params.id)
+      .eq('id', id)
 
     if (outfitError) throw outfitError
 
@@ -92,14 +94,14 @@ export async function PUT(
     const { error: deleteError } = await supabase
       .from('items')
       .delete()
-      .eq('outfit_id', params.id)
+      .eq('outfit_id', id)
 
     if (deleteError) throw deleteError
 
     // 새 items 추가
     if (outfitData.items && outfitData.items.length > 0) {
       const itemsToInsert = outfitData.items.map((item) => ({
-        outfit_id: params.id,
+        outfit_id: id,
         name: item.name || '',
         brand: item.brand,
         price: item.price || 0,
@@ -128,7 +130,7 @@ export async function PUT(
         *,
         items (*)
       `)
-      .eq('id', params.id)
+      .eq('id', id)
       .single()
 
     if (fetchError) throw fetchError
@@ -173,14 +175,15 @@ export async function PUT(
 // DELETE: outfit 삭제
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     // CASCADE로 items도 자동 삭제됨
     const { error } = await supabase
       .from('outfits')
       .delete()
-      .eq('id', params.id)
+      .eq('id', id)
 
     if (error) throw error
 
