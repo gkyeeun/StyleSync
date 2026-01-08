@@ -217,25 +217,27 @@ export default function Home() {
       href={`/look/${encodeURIComponent(outfit.member)}/${outfit.date}/${encodeURIComponent(outfit.event)}`}
       key={outfit.id}
     >
-      <Card className="overflow-hidden hover:shadow-lg transition-shadow transition-transform hover:scale-105 rounded-none">
+      <Card className="overflow-hidden rounded-none transition-all hover:scale-105 hover:shadow-lg">
         <CardContent className="p-0">
           <div className="relative aspect-[3/4]">
-            <img
+            <Image
               src={Array.isArray(outfit.image) ? outfit.image[0] : outfit.image[0]}
               alt={`${outfit.member}의 ${outfit.event} 패션`}
-              className="object-cover w-full h-full"
+              className="size-full object-cover"
+              width={300}
+              height={400}
             />
           </div>
         </CardContent>
         <CardFooter className="p-4">
-          <div className="flex justify-between items-start w-full">
+          <div className="flex w-full items-start justify-between">
             <div>
-              <h3 className="font-semibold text-lg">{outfit.event}</h3>
+              <h3 className="text-lg font-semibold">{outfit.event}</h3>
               <p className="text-sm text-muted-foreground">{outfit.date}</p>
               {/* Display info for the first item as an example */}
               {outfit.items.length > 0 && (
                 <>
-                  <p className="text-sm mb-2">{outfit.items[0].brand}</p>
+                  <p className="mb-2 text-sm">{outfit.items[0].brand}</p>
                   <div className="flex flex-wrap gap-2">
                     {outfit.items[0].style.map((style, idx) => (
                       <Badge key={idx} variant="secondary" className="rounded-none">
@@ -252,7 +254,7 @@ export default function Home() {
               className={outfit.isSaved ? "text-red-500" : ""}
               onClick={(e) => handleToggleFavorite(e, outfit.id)}
             >
-              <Heart className="h-5 w-5" />
+              <Heart className="size-5" />
             </Button>
           </div>
         </CardFooter>
@@ -265,16 +267,16 @@ export default function Home() {
       href={`/look/${encodeURIComponent(outfit.member)}/${outfit.date}/${encodeURIComponent(outfit.event)}`}
       key={outfit.id}
     >
-      <Card className="overflow-hidden hover:shadow-lg transition-shadow rounded-lg flex flex-row">
-        <CardContent className="p-4 flex-grow">
-          <div className="flex flex-col justify-between h-full">
+      <Card className="flex flex-row overflow-hidden rounded-lg transition-shadow hover:shadow-lg">
+        <CardContent className="grow p-4">
+          <div className="flex h-full flex-col justify-between">
             <div>
-              <h3 className="font-bold text-lg mb-1">{outfit.event}</h3>
-              <p className="text-sm text-muted-foreground mb-1">{outfit.date}</p>
+              <h3 className="mb-1 text-lg font-bold">{outfit.event}</h3>
+              <p className="mb-1 text-sm text-muted-foreground">{outfit.date}</p>
               {outfit.items.length > 0 && (
-                <p className="text-sm text-muted-foreground line-clamp-1">{outfit.items[0].brand} - {outfit.items[0].item}</p>
+                <p className="line-clamp-1 text-sm text-muted-foreground">{outfit.items[0].brand} - {outfit.items[0].item}</p>
               )}
-              <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{outfit.description}</p>
+              <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{outfit.description}</p>
             </div>
             {/* 찜 버튼 */}
             <Button
@@ -283,15 +285,17 @@ export default function Home() {
               className={outfit.isSaved ? "text-red-500" : "text-muted-foreground"}
               onClick={(e) => handleToggleFavorite(e, outfit.id)}
             >
-              <Heart className="h-5 w-5" />
+              <Heart className="size-5" />
             </Button>
           </div>
         </CardContent>
-        <div className="relative w-24 h-24 flex-shrink-0 m-4">
-            <img
+        <div className="relative m-4 size-24 shrink-0">
+            <Image
               src={Array.isArray(outfit.image) ? outfit.image[0] : outfit.image[0]}
               alt={`${outfit.member}의 ${outfit.event} 패션`}
-              className="object-cover w-full h-full rounded-md"
+              className="size-full rounded-md object-cover"
+              width={96}
+              height={96}
             />
           </div>
       </Card>
@@ -302,19 +306,19 @@ export default function Home() {
     <div className="flex min-h-screen flex-col">
       <main className="flex-1">
       {/* Hero Section */}
-      <section className="flex flex-col items-center justify-center space-y-4 pt-24 pb-12 text-center">
-          <h1 className="text-5xl font-extrabold tracking-tight mb-2">StyleSync</h1>
-          <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl font-medium">
+      <section className="flex flex-col items-center justify-center space-y-4 pb-12 pt-24 text-center">
+          <h1 className="mb-2 text-5xl font-extrabold tracking-tight">StyleSync</h1>
+          <p className="mx-auto max-w-[700px] font-medium text-muted-foreground md:text-xl">
           Discover the latest K-pop fashion trends and brand information.<br />
-          Get inspired by your favorite idols' styles.
+          Get inspired by your favorite idols&apos; styles.
         </p>
       </section>
 
         {/* 활동별 섹션 */}
         <section className="w-full py-12">
           <div className="container px-4 md:px-6">
-            <h2 className="text-2xl font-bold mb-6">활동별</h2>
-            <div className="flex gap-2 flex-wrap mb-8">
+            <h2 className="mb-6 text-2xl font-bold">활동별</h2>
+            <div className="mb-8 flex flex-wrap gap-2">
               {eventCategories.map(category => (
                 <Button
                   key={category.id}
@@ -339,14 +343,14 @@ export default function Home() {
               <CarouselContent className="-ml-4">
                 {eventFilteredOutfits.length > 0 ? (
                   eventFilteredOutfits.map((outfit) => (
-                    <CarouselItem key={outfit.id} className="pl-4 basis-1/3">
+                    <CarouselItem key={outfit.id} className="basis-1/3 pl-4">
                       <div className="p-1">
                         <FashionCard outfit={outfit} />
                       </div>
                     </CarouselItem>
                   ))
                 ) : (
-                  <div className="pl-4 col-span-full text-center py-8 text-muted-foreground">
+                  <div className="col-span-full py-8 pl-4 text-center text-muted-foreground">
                     해당 카테고리의 아이템이 없습니다.
                   </div>
                 )}
@@ -358,10 +362,10 @@ export default function Home() {
         </section>
 
         {/* 멤버별 섹션 */}
-        <section className="w-full py-12 bg-muted/50">
+        <section className="w-full bg-muted/50 py-12">
           <div className="container px-4 md:px-6">
-            <h2 className="text-2xl font-bold mb-6">멤버별</h2>
-            <div className="flex gap-2 flex-wrap mb-8">
+            <h2 className="mb-6 text-2xl font-bold">멤버별</h2>
+            <div className="mb-8 flex flex-wrap gap-2">
             <Button
               variant={selectedMember === "all" ? "default" : "outline"}
               className="rounded-none"
@@ -388,7 +392,7 @@ export default function Home() {
             >
               <CarouselContent className="-ml-4">
                 {memberLatestOutfits.map((outfit) => (
-                  <CarouselItem key={outfit.id} className="pl-4 basis-1/3">
+                  <CarouselItem key={outfit.id} className="basis-1/3 pl-4">
                     <div className="p-1">
                       <FashionCard outfit={outfit} />
                     </div>
@@ -404,7 +408,7 @@ export default function Home() {
         {/* 최신순 섹션 */}
         <section className="w-full py-12">
         <div className="container px-4 md:px-6">
-            <h2 className="text-2xl font-bold mb-6">최신순</h2>
+            <h2 className="mb-6 text-2xl font-bold">최신순</h2>
             <Carousel
               opts={{
                 align: "start",
@@ -413,7 +417,7 @@ export default function Home() {
             >
               <CarouselContent className="-ml-4">
                 {recentOutfits.map((outfit) => (
-                  <CarouselItem key={outfit.id} className="pl-4 basis-1/3">
+                  <CarouselItem key={outfit.id} className="basis-1/3 pl-4">
                     <div className="p-1">
                       <LatestCard outfit={outfit} />
                     </div>

@@ -9,6 +9,7 @@ import { FashionItem, Style } from "@/types/fashion"
 import { useEffect, useState } from "react"
 import { getFavoriteIds, toggleFavorite } from "@/lib/favorites"
 import { loadFashionItems } from "@/lib/fashionStorage"
+import Image from "next/image"
 
 // 임시 데이터
 const fashionItems: FashionItem[] = [
@@ -132,15 +133,15 @@ export default function MemberPage({ params }: { params: { memberId: string } })
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-                {params.memberId}'s Fashion
+                {params.memberId}&apos;s Fashion
               </h1>
-              <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl dark:text-gray-400">
-                Check out {params.memberId}'s various fashion styles.
+              <p className="mx-auto max-w-[700px] text-gray-500 dark:text-gray-400 md:text-xl">
+                Check out {params.memberId}&apos;s various fashion styles.
               </p>
             </div>
 
             {/* Filters */}
-            <div className="grid gap-6 mt-8">
+            <div className="mt-8 grid gap-6">
               <div className="flex flex-wrap gap-4">
                 <Button
                   variant={selectedEvent === "all" ? "default" : "outline"}
@@ -242,25 +243,27 @@ export default function MemberPage({ params }: { params: { memberId: string } })
             </div>
 
             {/* Items Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+            <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {sortedItems.map((item) => (
                 <Link href={`/look/${item.id}`} key={item.id}>
-                  <Card className="overflow-hidden hover:shadow-lg transition-shadow rounded-none">
+                  <Card className="overflow-hidden rounded-none transition-shadow hover:shadow-lg">
                     <CardContent className="p-0">
                       <div className="relative aspect-[3/4]">
-                        <img
+                        <Image
                           src={Array.isArray(item.image) ? item.image[0] : item.image}
                           alt={`${item.member}의 ${item.event} 패션`}
-                          className="object-cover w-full h-full"
+                          className="size-full object-cover"
+                          width={300}
+                          height={400}
                         />
                       </div>
                     </CardContent>
                     <CardFooter className="p-4">
-                      <div className="flex justify-between items-start w-full">
+                      <div className="flex w-full items-start justify-between">
                         <div>
-                          <h3 className="font-semibold text-lg">{item.event}</h3>
+                          <h3 className="text-lg font-semibold">{item.event}</h3>
                           <p className="text-sm text-muted-foreground">{item.date}</p>
-                          <p className="text-sm mb-2">{item.brand}</p>
+                          <p className="mb-2 text-sm">{item.brand}</p>
                           <div className="flex flex-wrap gap-2">
                             {item.style.map((style) => (
                               <Badge key={style} variant="secondary" className="rounded-none">
@@ -275,7 +278,7 @@ export default function MemberPage({ params }: { params: { memberId: string } })
                           className={item.isSaved ? "text-red-500" : ""}
                           onClick={(e) => handleToggleFavorite(e, item.id)}
                         >
-                          <Heart className="h-5 w-5" />
+                          <Heart className="size-5" />
                         </Button>
                       </div>
                     </CardFooter>

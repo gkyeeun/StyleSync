@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import Image from "next/image";
 
 // FashionCard 컴포넌트
 const FashionCard = ({ outfit }: { outfit: Outfit }) => (
@@ -23,13 +24,15 @@ const FashionCard = ({ outfit }: { outfit: Outfit }) => (
     href={`/look/${encodeURIComponent(outfit.member)}/${outfit.date}/${encodeURIComponent(outfit.event)}`} 
     key={outfit.id}
   >
-    <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-105 rounded-none">
+    <Card className="overflow-hidden rounded-none transition-all duration-300 hover:scale-105 hover:shadow-lg">
       <CardContent className="p-0">
         <div className="relative aspect-[3/4]">
-          <img
-            src={Array.isArray(outfit.image) ? outfit.image[0] : outfit.image}
+          <Image
+            src={Array.isArray(outfit.image) ? outfit.image[0] : outfit.image[0]}
             alt={`${outfit.member}의 ${outfit.event} 패션`}
-            className="object-cover w-full h-full transition-transform duration-300 hover:scale-110"
+            className="size-full object-cover"
+            width={300}
+            height={400}
           />
         </div>
       </CardContent>
@@ -107,7 +110,7 @@ export default function GalleryPage() {
 
   return (
     <div className="container mx-auto px-4 py-12">
-      <div className="flex justify-between items-center mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">갤러리</h1>
         <div className="flex gap-4">
           <Select value={selectedMember} onValueChange={setSelectedMember}>
@@ -151,7 +154,7 @@ export default function GalleryPage() {
       </div>
 
       {filteredAndSortedOutfits.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredAndSortedOutfits.map(outfit => (
             <FashionCard key={outfit.id} outfit={outfit} />
           ))}

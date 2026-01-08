@@ -8,6 +8,7 @@ import { FashionItem } from "@/types/fashion";
 import { loadFashionItems } from "@/lib/fashionStorage";
 import { ShoppingCart } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function AllLooks() {
   const [items, setItems] = useState<FashionItem[]>([]);
@@ -27,25 +28,27 @@ export default function AllLooks() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background dark:bg-[#09090b]">
-      <div className="container px-4 md:px-6 py-8">
-        <h1 className="text-3xl font-bold mb-8">모든 착장</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="container px-4 py-8 md:px-6">
+        <h1 className="mb-8 text-3xl font-bold">모든 착장</h1>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {items.map((item, idx) => (
             <Card key={idx} className="bg-background dark:bg-[#18181b]">
               <CardContent className="p-4">
-                <div className="relative aspect-[3/4] w-full mb-4">
-                  <img
-                    src={item.image && Array.isArray(item.image) ? item.image[0] : ""}
-                    alt={`${item.member} fashion`}
-                    className="object-cover w-full h-full rounded-none"
+                <div className="relative mb-4 aspect-[3/4] w-full">
+                  <Image
+                    src={Array.isArray(item.image) ? item.image[0] : item.image[0]}
+                    alt={`${item.member}의 ${item.event} 패션`}
+                    className="size-full object-cover"
+                    width={300}
+                    height={400}
                   />
                 </div>
-                <div className="font-semibold text-lg">{item.member}</div>
+                <div className="text-lg font-semibold">{item.member}</div>
                 <div className="text-base">{item.event} · {item.date}</div>
                 <div className="text-sm text-muted-foreground">₩ {item.price?.toLocaleString()}</div>
-                <div className="flex flex-wrap gap-2 mt-2">
+                <div className="mt-2 flex flex-wrap gap-2">
                   {item.style.map((style) => (
-                    <Badge key={style} variant="secondary" className="rounded-none bg-gray-100 text-gray-700 border-0 font-medium">
+                    <Badge key={style} variant="secondary" className="rounded-none border-0 bg-gray-100 font-medium text-gray-700">
                       {style}
                     </Badge>
                   ))}

@@ -44,19 +44,19 @@ export default function IdolPage({ params }: { params: { idolId: string } }) {
       <Navbar />
       
       {/* Back Button */}
-      <div className="container px-4 md:px-6 py-4">
+      <div className="container p-4 md:px-6">
         <Link href="/">
           <Button variant="ghost" className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="size-4" />
             뒤로 가기
           </Button>
         </Link>
       </div>
 
       {/* Idol Profile */}
-      <section className="container px-4 md:px-6 py-8">
+      <section className="container px-4 py-8 md:px-6">
         <div className="grid gap-8 md:grid-cols-2">
-          <div className="aspect-square relative rounded-lg overflow-hidden">
+          <div className="relative aspect-square overflow-hidden rounded-lg">
             <Image
               src={idolData.image}
               alt={idolData.name}
@@ -71,11 +71,11 @@ export default function IdolPage({ params }: { params: { idolId: string } }) {
             </p>
             <div className="flex gap-4">
               <Button variant="outline" size="lg" className="gap-2">
-                <Heart className="h-4 w-4" />
+                <Heart className="size-4" />
                 좋아요
               </Button>
               <Button variant="outline" size="lg" className="gap-2">
-                <Share2 className="h-4 w-4" />
+                <Share2 className="size-4" />
                 공유하기
               </Button>
             </div>
@@ -84,12 +84,12 @@ export default function IdolPage({ params }: { params: { idolId: string } }) {
       </section>
 
       {/* Outfits Section */}
-      <section className="container px-4 md:px-6 py-8">
-        <h2 className="text-3xl font-bold mb-8">최근 의상</h2>
+      <section className="container px-4 py-8 md:px-6">
+        <h2 className="mb-8 text-3xl font-bold">최근 의상</h2>
         <div className="grid gap-8 md:grid-cols-2">
           {idolData.outfits.map((outfit) => (
             <Card key={outfit.id}>
-              <div className="aspect-video relative">
+              <div className="relative aspect-video">
                 <Image
                   src={outfit.image}
                   alt={outfit.name}
@@ -114,7 +114,7 @@ export default function IdolPage({ params }: { params: { idolId: string } }) {
                     ))}
                   </div>
                   <Button className="w-full gap-2">
-                    <ShoppingBag className="h-4 w-4" />
+                    <ShoppingBag className="size-4" />
                     구매하기
                   </Button>
                 </div>

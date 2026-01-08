@@ -21,7 +21,7 @@ export function Navbar() {
 
   return (
     <nav className="border-b">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+      <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-8">
         <Link href="/" className="text-xl font-bold">
             StyleSync
@@ -38,11 +38,11 @@ export function Navbar() {
             <Button variant="ghost">갤러리</Button>
           </Link>
           <div className="relative w-full max-w-sm">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input 
               type="text" 
               placeholder="검색..." 
-              className="w-full md:w-[200px] pl-9"
+              className="w-full pl-9 md:w-[200px]"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={handleSearch}
@@ -50,12 +50,12 @@ export function Navbar() {
           </div>
           <Link href="/favorites">
             <Button variant="ghost" size="icon">
-              <Heart className="h-5 w-5" />
+              <Heart className="size-5" />
             </Button>
           </Link>
           <Link href="/admin/upload">
             <Button variant="ghost" size="icon">
-              <Shield className="h-5 w-5" />
+              <Shield className="size-5" />
             </Button>
           </Link>
         </div>

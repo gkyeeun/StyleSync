@@ -23,6 +23,9 @@ export interface Outfit {
   isSaved?: boolean; // Saved status for the entire outfit
 }
 
+// Alias for Outfit to maintain backward compatibility
+export type FashionItem = Outfit;
+
 export interface Member {
   id: string;
   name: string;

@@ -34,12 +34,12 @@ export default function MemberPage({ params }: { params: { memberId: string } })
       <div className="mb-8">
         <Link href="/idols/enhypen">
           <Button variant="ghost" className="mb-4">
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <ArrowLeft className="mr-2 size-4" />
             Back to ENHYPEN
           </Button>
         </Link>
         <div className="flex items-center gap-6">
-          <div className="relative h-32 w-32 overflow-hidden rounded-full">
+          <div className="relative size-32 overflow-hidden rounded-full">
             <Image
               src={member.image}
               alt={member.stageName}
@@ -58,12 +58,12 @@ export default function MemberPage({ params }: { params: { memberId: string } })
         {memberEvents.map((event) => (
           <div key={event.id} className="space-y-4">
             <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
+              <Calendar className="size-4" />
               <h2 className="text-xl font-semibold">{event.name}</h2>
               <span className="text-muted-foreground">{event.date}</span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {event.outfits
                 .filter((outfit) => outfit.memberId === params.memberId)
                 .map((outfit) => (
@@ -73,12 +73,12 @@ export default function MemberPage({ params }: { params: { memberId: string } })
                       <CardDescription>{outfit.date}</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="relative h-64 w-full mb-4">
+                      <div className="relative mb-4 h-64 w-full">
                         <Image
                           src={outfit.images[0]}
                           alt={outfit.description}
                           fill
-                          className="object-cover rounded-lg"
+                          className="rounded-lg object-cover"
                         />
                       </div>
                       <div className="space-y-4">
@@ -101,15 +101,15 @@ export default function MemberPage({ params }: { params: { memberId: string } })
                                   onClick={() => toggleItem(item.id)}
                                 >
                                   {expandedItems.has(item.id) ? (
-                                    <ChevronUp className="h-4 w-4" />
+                                    <ChevronUp className="size-4" />
                                   ) : (
-                                    <ChevronDown className="h-4 w-4" />
+                                    <ChevronDown className="size-4" />
                                   )}
                                 </Button>
                               </div>
                             </div>
                             {expandedItems.has(item.id) && (
-                              <div className="pl-4 space-y-2 border-l-2 border-gray-200">
+                              <div className="space-y-2 border-l-2 border-gray-200 pl-4">
                                 {item.purchaseOptions.map((option) => (
                                   <div
                                     key={option.store}
@@ -133,7 +133,7 @@ export default function MemberPage({ params }: { params: { memberId: string } })
                                         variant="outline"
                                         disabled={!option.inStock}
                                       >
-                                        <ExternalLink className="h-4 w-4 mr-2" />
+                                        <ExternalLink className="mr-2 size-4" />
                                         {option.inStock ? "구매하기" : "품절"}
                                       </Button>
                                     </Link>

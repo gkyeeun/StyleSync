@@ -199,9 +199,13 @@ export default function AdminUploadPage() {
       setEditId(null);
 
       router.refresh();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving outfit:", error);
-      alert("아이템 저장 중 오류가 발생했습니다.");
+      if (error instanceof Error && error.message === "QUOTA_EXCEEDED") {
+        alert("이미지 용량이 너무 커서 저장할 수 없습니다.\n이미지 개수나 크기를 줄인 후 다시 시도해 주세요.");
+      } else {
+        alert("아이템 저장 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+      }
     } finally {
       setLoading(false);
     }
@@ -229,7 +233,7 @@ export default function AdminUploadPage() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">Upload Fashion Item</h1>
+      <h1 className="mb-6 text-2xl font-bold">Upload Fashion Item</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Member Info Section */}
@@ -238,7 +242,7 @@ export default function AdminUploadPage() {
             <CardTitle>Member Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
                 <Label htmlFor="member">Member</Label>
             <Input
@@ -256,7 +260,7 @@ export default function AdminUploadPage() {
                   name="event"
                   value={fields.event}
                   onChange={handleFieldChange}
-                  className="w-full border rounded-md px-3 py-2 bg-background"
+                  className="w-full rounded-md border bg-background px-3 py-2"
                   required
                 >
                   <option value="공항">공항</option>
@@ -303,7 +307,7 @@ export default function AdminUploadPage() {
               <div className="flex items-center gap-4">
                 <Label htmlFor="image" className="cursor-pointer">
                   <div className="flex items-center gap-2">
-                    <Upload className="h-4 w-4" />
+                    <Upload className="size-4" />
                     <span>Upload Images</span>
         </div>
             <Input
@@ -322,7 +326,7 @@ export default function AdminUploadPage() {
                 >
                   {loading ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="mr-2 size-4 animate-spin" />
                       Extracting...
                     </>
                   ) : (
@@ -332,20 +336,20 @@ export default function AdminUploadPage() {
         </div>
 
         {images.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
                   {images.map((img, idx) => (
                     <div key={idx} className="relative">
                       <img
                         src={img}
                         alt={`Uploaded ${idx + 1}`}
-                        className="w-full h-32 object-cover rounded-lg"
+                        className="h-32 w-full rounded-lg object-cover"
                       />
                       <button
               type="button"
                         onClick={() => handleRemoveImage(idx)}
-                        className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                        className="absolute right-2 top-2 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
                       >
-                        <X className="h-4 w-4" />
+                        <X className="size-4" />
                       </button>
                     </div>
                   ))}
@@ -363,7 +367,7 @@ export default function AdminUploadPage() {
           <CardContent>
         <div className="space-y-4">
               {itemFields.map((item, idx) => (
-                <div key={idx} className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-lg">
+                <div key={idx} className="grid grid-cols-1 gap-4 rounded-lg border p-4 md:grid-cols-2">
                   <div>
                     <Label htmlFor={`brand-${idx}`}>Brand</Label>
                     <Input
@@ -391,7 +395,7 @@ export default function AdminUploadPage() {
                         name="currency"
                         value={item.currency}
                         onChange={(e) => handleItemFieldChange(idx, e)}
-                        className="w-20 border rounded-md px-2 py-2 bg-background"
+                        className="w-20 rounded-md border bg-background p-2"
                       >
                         <option value="₩">₩</option>
                         <option value="$">$</option>
@@ -455,7 +459,7 @@ export default function AdminUploadPage() {
           <Button type="submit" disabled={loading}>
             {loading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 size-4 animate-spin" />
                 Saving...
               </>
             ) : (
@@ -467,7 +471,7 @@ export default function AdminUploadPage() {
 
       {/* Registered Items Section */}
       <div className="mt-10 space-y-4">
-        <h2 className="text-xl font-bold mb-2">Registered Outfits</h2>
+        <h2 className="mb-2 text-xl font-bold">Registered Outfits</h2>
         {outfitList.length === 0 ? (
           <div className="text-gray-500">No outfits registered yet.</div>
         ) : (
@@ -477,7 +481,7 @@ export default function AdminUploadPage() {
                 <img
                   src={outfit.image[0]}
                   alt={outfit.member}
-                  className="w-20 h-20 object-cover rounded"
+                  className="size-20 rounded object-cover"
                 />
               )}
               <div className="flex-1">

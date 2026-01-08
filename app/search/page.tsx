@@ -10,26 +10,29 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Heart } from "lucide-react";
+import Image from "next/image";
 
 const FashionCard = ({ outfit }: { outfit: Outfit }) => (
   <Link 
     href={`/look/${encodeURIComponent(outfit.member)}/${outfit.date}/${encodeURIComponent(outfit.event)}`} 
     key={outfit.id}
   >
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow rounded-none">
+    <Card className="overflow-hidden rounded-none transition-shadow hover:shadow-lg">
       <CardContent className="p-0">
         <div className="relative aspect-[3/4]">
-          <img
-            src={Array.isArray(outfit.image) ? outfit.image[0] : outfit.image}
+          <Image
+            src={Array.isArray(outfit.image) ? outfit.image[0] : outfit.image[0]}
             alt={`${outfit.member}의 ${outfit.event} 패션`}
-            className="object-cover w-full h-full"
+            className="size-full object-cover"
+            width={300}
+            height={400}
           />
         </div>
       </CardContent>
       <CardFooter className="p-4">
-        <div className="flex justify-between items-start w-full">
+        <div className="flex w-full items-start justify-between">
           <div>
-            <h3 className="font-semibold text-lg">{outfit.event}</h3>
+            <h3 className="text-lg font-semibold">{outfit.event}</h3>
             <p className="text-sm text-muted-foreground">{outfit.date}</p>
             <div className="flex flex-wrap gap-2">
               {outfit.items.map(itemDetail => itemDetail.style.map(style => (
@@ -46,7 +49,7 @@ const FashionCard = ({ outfit }: { outfit: Outfit }) => (
             className={outfit.isSaved ? "text-red-500" : ""}
             onClick={(e) => handleToggleFavorite(e, outfit.id)}
           >
-            <Heart className="h-5 w-5" />
+            <Heart className="size-5" />
           </Button>
         </div>
       </CardFooter>
@@ -119,9 +122,9 @@ export default function SearchPage() {
 
   return (
     <div className="container mx-auto px-4 py-12">
-      <h1 className="text-2xl font-bold mb-6">'{searchQuery || ''}' 검색 결과</h1>
+      <h1 className="mb-6 text-2xl font-bold">'{searchQuery || ''}' 검색 결과</h1>
       {outfits.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {outfits.map(outfit => (
             <FashionCard key={outfit.id} outfit={outfit} />
           ))}

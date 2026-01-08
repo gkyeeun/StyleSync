@@ -1,18 +1,4 @@
-import { Outfit, ItemDetail } from "@/types/fashion";
-
-export interface FashionItem {
-  id: string;
-  member: string;
-  event: string;
-  date: string;
-  image: string[];
-  brand: string;
-  item: string;
-  price: number;
-  style: string[];
-  link: string;
-  description?: string;
-}
+import { Outfit, ItemDetail, FashionItem } from "@/types/fashion";
 
 const STORAGE_KEY = "fashionItems";
 const MAX_ITEMS = 100; // 최대 저장 가능한 아이템 수
@@ -56,13 +42,37 @@ export function saveOutfit(outfitData: Omit<Outfit, 'id' | 'isSaved'>): Outfit {
     
     outfits.unshift(newOutfit);
     const managedOutfits = manageStorage(outfits);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(managedOutfits));
-    return newOutfit;
+
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(managedOutfits));
+      return newOutfit;
+    } catch (error: any) {
+      // 로컬스토리지 용량 초과 시 기존 데이터 삭제 후 한 번 더 시도
+      const name = (error && (error as any).name) || "";
+      const code = (error && (error as any).code) || "";
+      const message = (error && (error as any).message) || "";
+
+      const isQuotaError =
+        name === "QuotaExceededError" ||
+        code === 22 ||
+        message.includes("exceeded the quota");
+
+      if (isQuotaError) {
+        console.warn("saveOutfit: QuotaExceededError detected, clearing existing data and retrying once");
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify([newOutfit]));
+          return newOutfit;
+        } catch (retryError) {
+          console.error("saveOutfit: Retry after clearing storage failed", retryError);
+          throw new Error("QUOTA_EXCEEDED");
+        }
+      }
+
+      throw error;
+    }
   } catch (error) {
     console.error('Error saving outfit:', error);
-    // 에러 발생 시 빈 배열로 초기화 또는 기존 데이터 유지 선택 가능
-    // 여기서는 에러 발생 시 데이터를 저장하지 않고 기존 데이터 유지
-    // localStorage.setItem(STORAGE_KEY, JSON.stringify([])); // 데이터를 날리는 대신
     throw error; // 에러를 던져서 호출한 곳에서 처리하도록 함
   }
 }
@@ -80,10 +90,16 @@ export function loadOutfits(): Outfit[] {
       return [];
     }
     
-    const outfits = JSON.parse(data);
+    const parsed = JSON.parse(data);
+    if (!Array.isArray(parsed)) {
+      console.warn('loadOutfits: Parsed data is not an array, clearing it');
+      localStorage.removeItem(STORAGE_KEY);
+      return [];
+    }
+
     // Ensure loaded data conforms to Outfit structure
-    console.log('loadOutfits: Successfully parsed data', outfits);
-    return outfits.map((outfit: any) => ({
+    console.log('loadOutfits: Successfully parsed data', parsed);
+    return parsed.map((outfit: any) => ({
       ...outfit,
       image: Array.isArray(outfit.image) ? outfit.image : [], // Ensure image is array
       items: Array.isArray(outfit.items) ? outfit.items.map((item: any) => ({
@@ -152,4 +168,7 @@ export function clearOutfits(): void {
   } catch (error) {
     console.error('Error clearing outfits:', error);
   }
-} 
+}
+
+// Alias for loadOutfits to maintain backward compatibility
+export const loadFashionItems = loadOutfits; 
