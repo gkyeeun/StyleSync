@@ -2,12 +2,11 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { Heart } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { FashionItem, Style } from "@/types/fashion"
 import { useEffect, useState } from "react"
-import { getFavoriteIds, toggleFavorite } from "@/lib/favorites"
 import { loadFashionItems } from "@/lib/fashionStorage"
 import Image from "next/image"
 
@@ -66,35 +65,22 @@ export default function MemberPage({ params }: { params: { memberId: string } })
   const [selectedBrand, setSelectedBrand] = useState<string>("all")
   const [selectedStyle, setSelectedStyle] = useState<string>("all")
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000])
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const loadData = async () => {
+      setIsLoading(true);
       const loadedData = await loadFashionItems();
-      const favoriteIds = await getFavoriteIds();
       const loaded = loadedData.map(item => ({
         ...item,
         style: item.style as Style[],
-        isSaved: favoriteIds.includes(item.id),
         description: item.description ?? "",
         price: Number(item.price) || 0,
       }));
       setItems(loaded);
+      setIsLoading(false);
     };
     loadData();
-  }, []);
-
-  // 찜 상태가 변경될 때마다 아이템 목록 업데이트
-  useEffect(() => {
-    const updateFavorites = async () => {
-      const favoriteIds = await getFavoriteIds();
-      setItems(prevItems => 
-        prevItems.map(item => ({
-          ...item,
-          isSaved: favoriteIds.includes(item.id)
-        }))
-      );
-    };
-    updateFavorites();
   }, []);
 
   // 멤버별 필터링
@@ -125,17 +111,17 @@ export default function MemberPage({ params }: { params: { memberId: string } })
     new Date(b.date).getTime() - new Date(a.date).getTime()
   )
 
-  const handleToggleFavorite = (e: React.MouseEvent, itemId: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    toggleFavorite(itemId);
-    setItems(prevItems => 
-      prevItems.map(item => ({
-      ...item,
-      isSaved: item.id === itemId ? !item.isSaved : item.isSaved
-      }))
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="size-8 animate-spin text-gray-400" />
+          <p className="text-sm text-gray-500">데이터를 불러오는 중...</p>
+        </div>
+      </div>
     );
-  };
+  }
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -274,23 +260,14 @@ export default function MemberPage({ params }: { params: { memberId: string } })
                         <div>
                           <h3 className="text-lg font-semibold">{item.event}</h3>
                           <p className="text-sm text-muted-foreground">{item.date}</p>
-                          <p className="mb-2 text-sm">{item.brand}</p>
                           <div className="flex flex-wrap gap-2">
-                            {item.style.map((style:any) => (
+                            {item.style && Array.isArray(item.style) && item.style.map((style:any) => (
                               <Badge key={style} variant="secondary" className="rounded-none">
                                 {style}
                               </Badge>
                             ))}
                           </div>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className={item.isSaved ? "text-red-500" : ""}
-                          onClick={(e) => handleToggleFavorite(e, item.id)}
-                        >
-                          <Heart className="size-5" />
-                        </Button>
                       </div>
                     </CardFooter>
                     <CardFooter className="p-4 pt-0">

@@ -28,7 +28,8 @@ export async function GET(request: NextRequest) {
       isSaved: outfit.is_saved || false,
       items: (outfit.items || []).map((item: any) => ({
         id: item.id,
-        name: item.name,
+        name: item.name || '',
+        item: item.name || '', // item 필드도 name과 동일하게 설정
         brand: item.brand,
         price: Number(item.price),
         purchaseLink: item.purchase_link || '',
@@ -80,7 +81,7 @@ export async function POST(request: NextRequest) {
     if (outfitData.items && outfitData.items.length > 0) {
       const itemsToInsert = outfitData.items.map((item) => ({
         outfit_id: outfit.id,
-        name: item.name || '',
+        name: item.name || (item as any).item || '',
         brand: item.brand,
         price: item.price || 0,
         purchase_link: item.purchaseLink || item.link || '',
@@ -126,7 +127,8 @@ export async function POST(request: NextRequest) {
       isSaved: createdOutfit.is_saved || false,
       items: (createdOutfit.items || []).map((item: any) => ({
         id: item.id,
-        name: item.name,
+        name: item.name || '',
+        item: item.name || '', // item 필드도 name과 동일하게 설정
         brand: item.brand,
         price: Number(item.price),
         purchaseLink: item.purchase_link || '',

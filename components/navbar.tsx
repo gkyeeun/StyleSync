@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Heart, Shield, Search } from "lucide-react";
+import { Shield, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 
@@ -48,11 +48,6 @@ export function Navbar() {
               onKeyDown={handleSearch}
             />
           </div>
-          <Link href="/favorites">
-            <Button variant="ghost" size="icon">
-              <Heart className="size-5" />
-            </Button>
-          </Link>
           <Link href="/admin/upload">
             <Button variant="ghost" size="icon">
               <Shield className="size-5" />

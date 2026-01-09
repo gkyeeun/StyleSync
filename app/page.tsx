@@ -2,14 +2,13 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { ArrowRight, CheckCircle, Zap, Star, Heart } from "lucide-react";
+import { ArrowRight, CheckCircle, Zap, Star, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { StartDialog } from "@/components/start-dialog";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Style, Outfit, ItemDetail } from "@/types/fashion";
 import { useEffect, useState } from "react";
-import { getFavoriteIds, toggleFavorite, getFavoriteItems } from "@/lib/favorites";
 import { loadOutfits } from "@/lib/fashionStorage";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
@@ -96,16 +95,7 @@ const temporaryOutfits: Outfit[] = [
   }
 ];
 
-const eventCategories = [
-  { id: "all", label: "전체" },
-  { id: "공항", label: "공항" },
-  { id: "방송", label: "방송" },
-  { id: "행사", label: "행사" },
-  { id: "화보", label: "화보" },
-  { id: "위버스 셀카", label: "위버스 셀카" },
-  { id: "콘서트", label: "콘서트" },
-  { id: "기타", label: "기타" },
-]
+// eventCategories는 동적으로 로드됨
 
 const members = ["정원", "성훈", "희승", "니키", "제이", "제이크", "선우"]
 
@@ -130,22 +120,48 @@ export default function Home() {
   const [outfits, setOutfits] = useState<Outfit[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<string>("all");
   const [selectedMember, setSelectedMember] = useState<string>("all");
-  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [filteredOutfits, setFilteredOutfits] = useState<Outfit[]>([]);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [eventCategories, setEventCategories] = useState([
+    { id: "all", label: "전체" },
+    { id: "공항", label: "공항" },
+    { id: "방송", label: "방송" },
+    { id: "행사", label: "행사" },
+    { id: "화보", label: "화보" },
+    { id: "위버스 셀카", label: "위버스 셀카" },
+    { id: "콘서트", label: "콘서트" },
+    { id: "기타", label: "기타" },
+  ]);
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   useEffect(() => {
     const loadData = async () => {
+      setIsLoading(true);
       console.log('Home page useEffect: Loading outfits...');
+      
+      // Event 목록 불러오기
+      try {
+        const response = await fetch('/api/events');
+        if (response.ok) {
+          const data = await response.json();
+          const events = data.events || [];
+          setEventCategories([
+            { id: "all", label: "전체" },
+            ...events.map((event: string) => ({ id: event, label: event }))
+          ]);
+        }
+      } catch (error) {
+        console.error('Error loading events:', error);
+      }
+      
       // Combine temporary data with loaded data, prioritize loaded data if IDs overlap
       const temporaryOutfits: Outfit[] = [
         // Your temporary outfit data here
       ];
 
       const loadedOutfitsData = await loadOutfits();
-      const favoriteIdsData = await getFavoriteIds();
       
       const loadedOutfits = loadedOutfitsData.map(outfit => ({
           ...outfit,
@@ -158,7 +174,6 @@ export default function Home() {
              link: item.link || "", // Ensure link exists
              description: item.description || "" // Ensure description exists
           })) : [], // Ensure items is an array
-          isSaved: favoriteIdsData.includes(outfit.id) // Sync saved status
        }));
 
       console.log('Home page useEffect: Loaded outfits', loadedOutfits);
@@ -176,23 +191,9 @@ export default function Home() {
       });
 
       setOutfits(mergedOutfits);
-      setFavoriteIds(favoriteIdsData);
+      setIsLoading(false);
     };
     loadData();
-  }, []);
-
-  // 찜 상태가 변경될 때마다 아웃핏 목록 업데이트
-  useEffect(() => {
-    const updateFavorites = async () => {
-      const favoriteIds = await getFavoriteIds();
-      setOutfits(prevOutfits =>
-        prevOutfits.map(outfit => ({
-          ...outfit,
-          isSaved: favoriteIds.includes(outfit.id)
-        }))
-      );
-    };
-    updateFavorites();
   }, []);
 
   // 이벤트별 필터링
@@ -225,20 +226,6 @@ export default function Home() {
     new Date(b.date).getTime() - new Date(a.date).getTime()
   ).slice(0, 6);
 
-  const handleToggleFavorite = (e: React.MouseEvent, outfitId: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    toggleFavorite(outfitId);
-
-    // 찜 상태 업데이트
-    setOutfits(prevOutfits =>
-      prevOutfits.map(outfit => ({
-        ...outfit,
-        isSaved: outfit.id === outfitId ? !outfit.isSaved : outfit.isSaved
-      }))
-    );
-  };
-
   const FashionCard = ({ outfit }: { outfit: Outfit }) => (
     <Link
       href={`/look/${encodeURIComponent(outfit.member)}/${outfit.date}/${encodeURIComponent(outfit.event)}`}
@@ -259,30 +246,19 @@ export default function Home() {
         <CardFooter className="p-4">
           <div className="flex w-full items-start justify-between">
             <div>
-              <h3 className="text-lg font-semibold">{outfit.event}</h3>
-              <p className="text-sm text-muted-foreground">{outfit.date}</p>
+              <h3 className="text-lg font-semibold">{outfit.member}</h3>
+              <p className="text-sm text-muted-foreground">{outfit.event} · {outfit.date}</p>
               {/* Display info for the first item as an example */}
               {outfit.items.length > 0 && (
-                <>
-                  <p className="mb-2 text-sm">{outfit.items[0].brand}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {outfit.items[0].style.map((style:any, idx:any) => (
-                      <Badge key={idx} variant="secondary" className="rounded-none">
-                        {style}
-                      </Badge>
-                    ))}
-                  </div>
-                </>
+                <div className="flex flex-wrap gap-2">
+                  {outfit.items[0].style && Array.isArray(outfit.items[0].style) && outfit.items[0].style.map((style:any, idx:any) => (
+                    <Badge key={idx} variant="secondary" className="rounded-none">
+                      {style}
+                    </Badge>
+                  ))}
+                </div>
               )}
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className={outfit.isSaved ? "text-red-500" : ""}
-              onClick={(e) => handleToggleFavorite(e, outfit.id)}
-            >
-              <Heart className="size-5" />
-            </Button>
           </div>
         </CardFooter>
       </Card>
@@ -298,22 +274,13 @@ export default function Home() {
         <CardContent className="grow p-4">
           <div className="flex h-full flex-col justify-between">
             <div>
-              <h3 className="mb-1 text-lg font-bold">{outfit.event}</h3>
-              <p className="mb-1 text-sm text-muted-foreground">{outfit.date}</p>
+              <h3 className="mb-1 text-lg font-bold">{outfit.member}</h3>
+              <p className="mb-1 text-sm text-muted-foreground">{outfit.event} · {outfit.date}</p>
               {outfit.items.length > 0 && (
-                <p className="line-clamp-1 text-sm text-muted-foreground">{outfit.items[0].brand} - {outfit.items[0].item}</p>
+                <p className="line-clamp-1 text-sm text-muted-foreground">{outfit.items[0].item || outfit.items[0].name}</p>
               )}
               <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{outfit.description}</p>
             </div>
-            {/* 찜 버튼 */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className={outfit.isSaved ? "text-red-500" : "text-muted-foreground"}
-              onClick={(e) => handleToggleFavorite(e, outfit.id)}
-            >
-              <Heart className="size-5" />
-            </Button>
           </div>
         </CardContent>
         <div className="relative m-4 size-24 shrink-0">
@@ -328,6 +295,17 @@ export default function Home() {
       </Card>
     </Link>
   )
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="size-8 animate-spin text-gray-400" />
+          <p className="text-sm text-gray-500">데이터를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col">

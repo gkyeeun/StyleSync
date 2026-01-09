@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Outfit } from "@/types/fashion";
 import { loadOutfits, deleteOutfit } from "@/lib/fashionStorage";
-import { ArrowLeft, ShoppingCart, Trash2 } from "lucide-react";
+import { ArrowLeft, ShoppingCart, Trash2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -18,9 +18,11 @@ export default function LookDetail() {
   const decodedMember = decodeURIComponent(member);
   const decodedEvent = decodeURIComponent(event);
   const [outfit, setOutfit] = useState<Outfit | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadData = async () => {
+      setIsLoading(true);
       if (decodedMember && decodedEvent) {
         const allOutfits = await loadOutfits();
         // 해당 착장(멤버+날짜+카테고리)에 속한 아웃핏 찾기
@@ -32,6 +34,7 @@ export default function LookDetail() {
         );
         setOutfit(found || null);
       }
+      setIsLoading(false);
     };
     loadData();
   }, [decodedMember, decodedEvent, date]);
@@ -65,6 +68,17 @@ export default function LookDetail() {
     }
     // fallback: 구글 검색
     return `https://www.google.com/search?q=${encodeURIComponent(brand + ' ' + item)}`;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="size-8 animate-spin text-gray-400" />
+          <p className="text-sm text-gray-500">데이터를 불러오는 중...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!outfit) {
@@ -122,12 +136,12 @@ export default function LookDetail() {
                       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div>
                           <div className="text-lg font-semibold">{item.brand}</div>
-                          <div className="text-base">{item.item}</div>
+                          <div className="text-base">{item.item || item.name}</div>
                           <div className="text-sm text-muted-foreground">
                             {item.currency} {item.price?.toLocaleString()}
                           </div>
                           <div className="mt-2 flex flex-wrap gap-2">
-                            {item.style.map((style:any) => (
+                            {item.style && Array.isArray(item.style) && item.style.map((style:any) => (
                               <Badge key={style} variant="secondary" className="rounded-none border-0 bg-gray-100 font-medium text-gray-700">
                                 {style}
                               </Badge>
@@ -135,7 +149,7 @@ export default function LookDetail() {
                           </div>
                         </div>
                         <Button asChild variant="outline" className="mt-2 md:mt-0">
-                          <a href={item.link || getPurchaseLink(item.brand, item.item)} target="_blank" rel="noopener noreferrer">
+                          <a href={item.link || item.purchaseLink || getPurchaseLink(item.brand, item.item || item.name || '')} target="_blank" rel="noopener noreferrer">
                             <ShoppingCart className="mr-2 size-4" /> 구매하러 가기
                           </a>
                         </Button>

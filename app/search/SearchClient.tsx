@@ -5,19 +5,10 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Outfit } from "@/types/fashion";
 import { loadOutfits } from "@/lib/fashionStorage";
-import { getFavoriteIds, toggleFavorite } from "@/lib/favorites";
 import Link from "next/link";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Heart } from "lucide-react";
 import Image from "next/image";
-
-const handleToggleFavorite = (e: React.MouseEvent, outfitId: string) => {
-  e.preventDefault();
-  e.stopPropagation();
-  toggleFavorite(outfitId);
-};
 
 const FashionCard = ({ outfit }: { outfit: Outfit }) => (
   <Link
@@ -53,15 +44,6 @@ const FashionCard = ({ outfit }: { outfit: Outfit }) => (
               )}
             </div>
           </div>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            className={outfit.isSaved ? "text-red-500" : ""}
-            onClick={(e) => handleToggleFavorite(e, outfit.id)}
-          >
-            <Heart className="size-5" />
-          </Button>
         </div>
       </CardFooter>
     </Card>
@@ -77,7 +59,6 @@ export default function SearchClient() {
   useEffect(() => {
     const loadData = async () => {
       const allOutfits = await loadOutfits();
-      const favoriteIds = await getFavoriteIds();
 
       const outfitsWithImages = allOutfits.filter(
         (outfit) =>
@@ -86,10 +67,7 @@ export default function SearchClient() {
           outfit.image.some((img) => typeof img === "string" && img.trim() !== "")
       );
 
-      const outfitsWithSavedStatus = outfitsWithImages.map((outfit) => ({
-        ...outfit,
-        isSaved: favoriteIds.includes(outfit.id),
-      }));
+      const outfitsWithSavedStatus = outfitsWithImages;
 
       if (searchQuery) {
         const lowerCaseQuery = searchQuery.toLowerCase();

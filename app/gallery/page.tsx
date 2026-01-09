@@ -3,12 +3,9 @@
 import { useEffect, useState } from 'react';
 import { Outfit, Style } from "@/types/fashion";
 import { loadOutfits } from "@/lib/fashionStorage";
-import { getFavoriteIds, toggleFavorite } from "@/lib/favorites";
 import Link from "next/link";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Heart } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -40,13 +37,6 @@ const FashionCard = ({ outfit }: { outfit: Outfit }) => (
   </Link>
 );
 
-// 찜 토글 핸들러
-const handleToggleFavorite = async (e: React.MouseEvent, outfitId: string) => {
-  e.preventDefault();
-  e.stopPropagation();
-  await toggleFavorite(outfitId);
-  // Note: State update will happen in the parent component
-};
 
 export default function GalleryPage() {
   const [outfits, setOutfits] = useState<Outfit[]>([]);
@@ -58,7 +48,6 @@ export default function GalleryPage() {
   useEffect(() => {
     const loadData = async () => {
       const allOutfits = await loadOutfits();
-      const favoriteIds = await getFavoriteIds();
       
       // Filter out outfits that have no images
       const outfitsWithImages = allOutfits.filter(outfit => 
@@ -67,29 +56,12 @@ export default function GalleryPage() {
         outfit.image.some(img => typeof img === 'string' && img.trim() !== '')
       );
 
-      const outfitsWithSavedStatus = outfitsWithImages.map(outfit => ({
-        ...outfit,
-        isSaved: favoriteIds.includes(outfit.id)
-      }));
+      const outfitsWithSavedStatus = outfitsWithImages;
       
       setOutfits(outfitsWithSavedStatus);
       setLoading(false);
     };
     loadData();
-  }, []);
-
-  // 찜 상태가 변경될 때마다 아이템 목록 업데이트
-  useEffect(() => {
-    const updateFavorites = async () => {
-      const favoriteIds = await getFavoriteIds();
-      setOutfits(prevOutfits => 
-        prevOutfits.map(outfit => ({
-          ...outfit,
-          isSaved: favoriteIds.includes(outfit.id)
-        }))
-      );
-    };
-    updateFavorites();
   }, []);
 
   // 필터링 및 정렬된 아이템 목록

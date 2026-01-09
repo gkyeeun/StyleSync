@@ -13,7 +13,6 @@ import { Outfit, ItemDetail } from "@/types/fashion";
 import { useRouter } from "next/navigation";
 import { Upload, X } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import { getFavoriteIds } from "@/lib/favorites";
 import { isAuthenticated, signOut } from "@/lib/auth";
 
 export default function AdminUploadPage() {
@@ -30,6 +29,10 @@ export default function AdminUploadPage() {
     date: "",
     description: ""
   });
+  const [isCustomEvent, setIsCustomEvent] = useState(false);
+  const [availableEvents, setAvailableEvents] = useState<string[]>([
+    "공항", "방송", "행사", "화보", "위버스 셀카", "콘서트", "기타"
+  ]);
   const [outfitList, setOutfitList] = useState<Outfit[]>([]);
   const [editId, setEditId] = useState<string | null>(null);
   // 여러 아이템 입력 세트
@@ -66,9 +69,22 @@ export default function AdminUploadPage() {
     if (!isAuth) return;
     
     const loadData = async () => {
-      const outfits = await loadOutfits();
-      setOutfitList(outfits);
+      // Outfits 불러오기
+      const loadedOutfits = await loadOutfits();
+      setOutfitList(loadedOutfits);
+      
+      // Event 목록 불러오기
+      try {
+        const response = await fetch('/api/events');
+        if (response.ok) {
+          const data = await response.json();
+          setAvailableEvents(data.events || []);
+        }
+      } catch (error) {
+        console.error('Error loading events:', error);
+      }
     };
+    
     loadData();
   }, [isAuth]);
 
@@ -226,11 +242,9 @@ export default function AdminUploadPage() {
 
       if (editId) {
         // 수정 모드: 기존 아이템 업데이트
-        const favoriteIds = await getFavoriteIds();
         const updatedOutfit = {
           ...outfitData,
           id: editId,
-          isSaved: favoriteIds.includes(editId)
         };
         await updateOutfit(updatedOutfit);
         const updatedList = await loadOutfits();
@@ -248,6 +262,7 @@ export default function AdminUploadPage() {
         date: "",
         description: ""
       });
+      setIsCustomEvent(false);
       setImages([]);
       setItemFields([{
         brand: "", item: "", price: 0, style: [], link: "", description: "", currency: "₩",
@@ -259,6 +274,21 @@ export default function AdminUploadPage() {
       setEditId(null);
 
       router.refresh();
+      
+      // 저장 후 event 목록 새로고침
+      try {
+        const response = await fetch('/api/events');
+        if (response.ok) {
+          const data = await response.json();
+          setAvailableEvents(data.events || []);
+          // 새로 추가된 event라면 자동으로 선택 모드로 전환
+          if (data.events.includes(fields.event) && isCustomEvent) {
+            setIsCustomEvent(false);
+          }
+        }
+      } catch (error) {
+        console.error('Error refreshing events:', error);
+      }
     } catch (error) {
       console.error("Error saving outfit:", error);
       alert("아이템 저장 중 오류가 발생했습니다.");
@@ -269,12 +299,15 @@ export default function AdminUploadPage() {
 
   // 수정 버튼 클릭 시
   const handleEdit = (outfit: Outfit) => {
+    const isCustom = !availableEvents.includes(outfit.event);
+    
     setFields({
       member: outfit.member,
       event: outfit.event,
       date: outfit.date,
       description: outfit.description || ""
     });
+    setIsCustomEvent(isCustom);
     setImages(Array.isArray(outfit.image) ? outfit.image : [outfit.image]);
     setItemFields(outfit.items);
     setEditId(outfit.id);
@@ -331,22 +364,39 @@ export default function AdminUploadPage() {
           </div>
           <div>
                 <Label htmlFor="event">Event</Label>
-                <select
-                  id="event"
-                  name="event"
-                  value={fields.event}
-                  onChange={handleFieldChange}
-                  className="w-full rounded-md border bg-background px-3 py-2"
-                  required
-                >
-                  <option value="공항">공항</option>
-                  <option value="방송">방송</option>
-                  <option value="행사">행사</option>
-                  <option value="화보">화보</option>
-                  <option value="위버스 셀카">위버스 셀카</option>
-                  <option value="콘서트">콘서트</option>
-                  <option value="기타">기타</option>
-                </select>
+                <div className="space-y-2">
+                  <select
+                    id="event-select"
+                    value={isCustomEvent ? "custom" : fields.event}
+                    onChange={(e) => {
+                      if (e.target.value === "custom") {
+                        setIsCustomEvent(true);
+                        setFields({ ...fields, event: "" });
+                      } else {
+                        setIsCustomEvent(false);
+                        setFields({ ...fields, event: e.target.value });
+                      }
+                    }}
+                    className="w-full rounded-md border bg-background px-3 py-2"
+                    required={!isCustomEvent}
+                  >
+                    {availableEvents.map(event => (
+                      <option key={event} value={event}>{event}</option>
+                    ))}
+                    <option value="custom">+ 직접 입력</option>
+                  </select>
+                  {isCustomEvent && (
+                    <Input
+                      id="event"
+                      name="event"
+                      value={fields.event}
+                      onChange={handleFieldChange}
+                      placeholder="이벤트명을 입력하세요"
+                      className="w-full"
+                      required
+                    />
+                  )}
+                </div>
               </div>
               <div>
                 <Label htmlFor="date">Date</Label>
